@@ -2,6 +2,12 @@
 name = "rust_sfq"
 version = "0.1.0"
 edition = "2024"
+authors = ["Mebuki Oishi <mebuki@is.s.u-tokyo.ac.jp>"]
+description = "DSL for designing SFQ circuits in Rust."
+license = "MIT"
+repository = "https://github.com/Mebuki-mebuki/rust_sfq"
+keywords = ["sfq", "dsl", "circuit"]
+categories = ["science", "embedded"]
 
 [dependencies]
 twox-hash = "2.1.0"
