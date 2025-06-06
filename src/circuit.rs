@@ -22,7 +22,7 @@ pub struct Circuit<const N_I: usize, const N_CO: usize, const N_O: usize, const 
 
 // 1出力ゲート関数定義用マクロ (関数名, Enumバリアント名, 引数Wireリスト)
 macro_rules! define_gate_fn {
-    ($fn_name:ident, $variant:ident, [$($arg:ident),*]) => {
+    ($fn_name:ident, $fn_name_labeled:ident, $variant:ident, [$($arg:ident),*]) => {
         pub fn $fn_name(&mut self, $(mut $arg: Wire),*) -> Wire {
             // 入力 Wire のチェック, receive
             $(
@@ -43,6 +43,12 @@ macro_rules! define_gate_fn {
             self.gates.push(gate);
 
             return q;
+        }
+
+        pub fn $fn_name_labeled (&mut self, $($arg: Wire,)* label: &str) -> Wire {
+            let wire = self.$fn_name($($arg),*);
+            self.label(&wire, label);
+            return wire;
         }
     };
 }
@@ -130,17 +136,17 @@ impl<const N_I: usize, const N_CO: usize, const N_O: usize, const N_CI: usize>
         return res;
     }
 
-    define_gate_fn!(jtl, Jtl, [a]);
-    define_gate_fn!(merge, Merge, [a, b]);
-    define_gate_fn!(and, And, [a, b, clk]);
-    define_gate_fn!(or, Or, [a, b, clk]);
-    define_gate_fn!(xor, Xor, [a, b, clk]);
-    define_gate_fn!(not, Not, [a, clk]);
-    define_gate_fn!(xnor, Xnor, [a, b, clk]);
-    define_gate_fn!(dff, Dff, [a, clk]);
-    define_gate_fn!(ndro, Ndro, [a, b, clk]);
-    define_gate_fn!(buff, Buff, [a]);
-    define_gate_fn!(zero_async, ZeroAsync, []);
+    define_gate_fn!(jtl, jtl_labeld, Jtl, [a]);
+    define_gate_fn!(merge, merge_labeled, Merge, [a, b]);
+    define_gate_fn!(and, and_labeled, And, [a, b, clk]);
+    define_gate_fn!(or, or_labeled, Or, [a, b, clk]);
+    define_gate_fn!(xor, xor_labeled, Xor, [a, b, clk]);
+    define_gate_fn!(not, not_labeled, Not, [a, clk]);
+    define_gate_fn!(xnor, xnor_labeled, Xnor, [a, b, clk]);
+    define_gate_fn!(dff, dff_labeled, Dff, [a, clk]);
+    define_gate_fn!(ndro, ndro_labeled, Ndro, [a, b, clk]);
+    define_gate_fn!(buff, buff_labeled, Buff, [a]);
+    define_gate_fn!(zero_async, zero_async_labeled, ZeroAsync, []);
 
     pub fn split(&mut self, mut a: Wire) -> [Wire; 2] {
         // 入力 Wire のチェック, receive
@@ -166,24 +172,28 @@ impl<const N_I: usize, const N_CO: usize, const N_O: usize, const N_CI: usize>
         return [q1, q2];
     }
 
-    // wire % circuit.label("hoge") の構文でラベル付け
+    pub fn split_labeld(&mut self, a: Wire, label1: &str, label2: &str) -> [Wire; 2] {
+        let [wire1, wire2] = self.split(a);
+        self.label(&wire1, label1);
+        self.label(&wire2, label2);
+        return [wire1, wire2];
+    }
+
+    // circuit.label(&wire, "hoge") でラベル付け
     #[allow(private_bounds)]
-    pub fn label<T>(&mut self, label: &str) -> impl FnOnce(T) -> T
+    pub fn label<T>(&mut self, wire: &T, label: &str)
     where
         T: HasWireID,
     {
-        return |wire: T| {
-            assert!(wire.circuit_id() == self.id);
-            assert!(
-                self.wire_names
-                    .get(&wire.wire_id())
-                    .unwrap()
-                    .starts_with("_")
-            );
-            assert!(!label.starts_with("_"));
-            self.wire_names.insert(wire.wire_id(), label.to_string());
-            return wire;
-        };
+        assert!(wire.circuit_id() == self.id);
+        assert!(
+            self.wire_names
+                .get(&wire.wire_id())
+                .unwrap()
+                .starts_with("_")
+        );
+        assert!(!label.starts_with("_"));
+        self.wire_names.insert(wire.wire_id(), label.to_string());
     }
 
     // Wire と CounterWire を統合

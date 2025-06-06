@@ -57,17 +57,6 @@ macro_rules! define_wire_type {
                 return self.cid;
             }
         }
-
-        impl<F> std::ops::Rem<F> for $name
-        where
-            F: FnOnce($name) -> $name,
-        {
-            type Output = $name;
-
-            fn rem(self, f: F) -> $name {
-                f(self)
-            }
-        }
     };
 }
 
