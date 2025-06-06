@@ -37,7 +37,7 @@ fn main() {
     let [a1, a2] = circuit.split(a);
     let [b1, b2] = circuit.split(b);
     let [clk1, clk2] = circuit.split(clk);
-    let clk1 = clk1 % circuit.label("clk_1");
+    circuit.label(&clk1, "clk_1");
 
     let c = circuit.and(a1, b1, clk1);
     let s = circuit.xor(a2, b2, clk2);
