@@ -49,6 +49,19 @@ impl Backend for RsfqlibSpice {
                 Gate::Ndro { name, a, b, clk, q } => gate_string!(c, name, [a, b, clk, q], "NDRO"),
                 Gate::Buff { name, a, q } => gate_string!(c, name, [a, q], "BUFF"),
                 Gate::ZeroAsync { name, q } => gate_string!(c, name, [q], "ALWAYS0_ASYNC_NOA"),
+                Gate::Subcircuit {
+                    name,
+                    inputs,
+                    outputs,
+                    circuit,
+                } => {
+                    let ports: Vec<&str> = inputs
+                        .iter()
+                        .chain(outputs.iter())
+                        .map(|wid| c.wire_names.get(wid).unwrap().as_str())
+                        .collect();
+                    format!("{} {} {}", name, ports.join(" "), circuit)
+                }
                 _ => panic!("Unsupported Gate"),
             };
             res.push(s);

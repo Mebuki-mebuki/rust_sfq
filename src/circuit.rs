@@ -295,6 +295,56 @@ impl<const N_I: usize, const N_CI: usize, const N_O: usize, const N_CO: usize>
         return cwire;
     }
 
+    pub fn subcircuit<const M_I: usize, const M_CI: usize, const M_O: usize, const M_CO: usize>(
+        &mut self,
+        circuit: &Circuit<M_I, M_CI, M_O, M_CO>,
+        mut inputs: [Wire; M_I],
+        mut counter_inputs: [CounterWire; N_CI],
+    ) -> ([Wire; M_O], [CounterWire; M_CO]) {
+        // 入力Wireの処理
+        assert!(inputs.iter().all(|w| w.circuit_id() == self.id));
+        assert!(counter_inputs.iter().all(|w| w.circuit_id() == self.id));
+        inputs.iter_mut().for_each(|w| w.receive());
+        counter_inputs.iter_mut().for_each(|cw| cw.drive());
+
+        let gate_name = format!("X{}{}", circuit.name, self.generate_gate_id());
+
+        // 出力Wireの生成
+        let output_wires = circuit.outputs.clone().map(|s| {
+            let wire_name = format!("_{}_{}", gate_name, s);
+            let mut wire = self.generate_wire(wire_name);
+            wire.drive();
+            wire
+        });
+        let counter_output_wires = circuit.counter_outputs.clone().map(|s| {
+            let wire_name = format!("_{}_{}", gate_name, s);
+            let mut cwire = self.generate_counter_wire(wire_name);
+            cwire.receive();
+            cwire
+        });
+
+        // ゲートの生成
+        let gate_inputs: Vec<WireID> = inputs
+            .iter()
+            .map(|w| w.wire_id())
+            .chain(counter_output_wires.iter().map(|cw| cw.wire_id()))
+            .collect();
+        let gate_outputs: Vec<WireID> = output_wires
+            .iter()
+            .map(|w| w.wire_id())
+            .chain(counter_inputs.iter().map(|cw| cw.wire_id()))
+            .collect();
+        let gate = Gate::Subcircuit {
+            name: gate_name,
+            inputs: gate_inputs,
+            outputs: gate_outputs,
+            circuit: circuit.name.clone(),
+        };
+        self.gates.push(gate);
+
+        return (output_wires, counter_output_wires);
+    }
+
     //-------------------- Wire Functions ----------------------//
 
     // 同一のidを持ったWireとCounterWireを生成する

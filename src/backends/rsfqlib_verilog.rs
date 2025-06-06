@@ -74,6 +74,19 @@ impl Backend for RsfqlibVerilog {
                     name,
                     c.wire_names.get(q).unwrap()
                 ),
+                Gate::Subcircuit {
+                    name,
+                    inputs,
+                    outputs,
+                    circuit,
+                } => {
+                    let ports: Vec<&str> = inputs
+                        .iter()
+                        .chain(outputs.iter())
+                        .map(|wid| c.wire_names.get(wid).unwrap().as_str())
+                        .collect();
+                    format!("{} {} ({});", circuit, name, ports.join(", "))
+                }
                 _ => panic!("Unsupported Gate"),
             };
             res.push(s);

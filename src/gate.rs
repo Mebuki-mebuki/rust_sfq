@@ -75,5 +75,11 @@ pub(crate) enum Gate {
         name: String,
         q: WireID,
     },
+    Subcircuit {
+        name: String,
+        inputs: Vec<WireID>,
+        outputs: Vec<WireID>,
+        circuit: String,
+    },
     _Reserved, // 将来のゲート追加に備えてパターンマッチでワイルドカードを使ってもWarningが出ないようにする用
 }
