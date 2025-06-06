@@ -16,8 +16,8 @@ macro_rules! gate_string {
 }
 
 impl Backend for RsfqlibVerilog {
-    fn generate<const N_I: usize, const N_CO: usize, const N_O: usize, const N_CI: usize>(
-        c: &Circuit<N_I, N_CO, N_O, N_CI>,
+    fn generate<const N_I: usize, const N_CI: usize, const N_O: usize, const N_CO: usize>(
+        c: &Circuit<N_I, N_CI, N_O, N_CO>,
     ) -> String {
         let mut res = Vec::new();
 
@@ -25,13 +25,13 @@ impl Backend for RsfqlibVerilog {
         let in_ports: Vec<&str> = c
             .inputs
             .iter()
-            .chain(c.counter_inputs.iter())
+            .chain(c.counter_outputs.iter())
             .map(|s| s.as_str())
             .collect();
         let out_ports: Vec<&str> = c
             .outputs
             .iter()
-            .chain(c.counter_outputs.iter())
+            .chain(c.counter_inputs.iter())
             .map(|s| s.as_str())
             .collect();
         let ports: Vec<&str> = [in_ports.clone(), out_ports.clone()].concat();

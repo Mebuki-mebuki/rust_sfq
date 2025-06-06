@@ -15,19 +15,23 @@ macro_rules! gate_string {
 }
 
 impl Backend for RsfqlibSpice {
-    fn generate<const N_I: usize, const N_CO: usize, const N_O: usize, const N_CI: usize>(
-        c: &Circuit<N_I, N_CO, N_O, N_CI>,
+    fn generate<const N_I: usize, const N_CI: usize, const N_O: usize, const N_CO: usize>(
+        c: &Circuit<N_I, N_CI, N_O, N_CO>,
     ) -> String {
         let mut res = Vec::new();
 
         /* ------------------- header ------------------- */
         res.push(format!(
-            ".subckt {} {} {} {} {}",
+            ".subckt {} {}",
             c.name,
-            c.inputs.join(" "),
-            c.counter_inputs.join(" "),
-            c.outputs.join(" "),
-            c.counter_outputs.join(" ")
+            c.inputs
+                .iter()
+                .chain(c.counter_outputs.iter())
+                .chain(c.outputs.iter())
+                .chain(c.counter_inputs.iter())
+                .map(|s| s.as_str())
+                .collect::<Vec<&str>>()
+                .join(" "),
         ));
 
         /* ------------------- body ------------------- */

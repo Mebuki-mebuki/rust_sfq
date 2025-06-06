@@ -5,13 +5,13 @@ use crate::gate::Gate;
 use crate::id::{CircuitID, WireID};
 use crate::wire::{CounterWire, HasWireID, Wire};
 
-pub struct Circuit<const N_I: usize, const N_CO: usize, const N_O: usize, const N_CI: usize> {
+pub struct Circuit<const N_I: usize, const N_CI: usize, const N_O: usize, const N_CO: usize> {
     pub(crate) name: String,
     id: CircuitID,
     pub(crate) inputs: [String; N_I],
-    pub(crate) counter_outputs: [String; N_CO],
-    pub(crate) outputs: [String; N_O],
     pub(crate) counter_inputs: [String; N_CI],
+    pub(crate) outputs: [String; N_O],
+    pub(crate) counter_outputs: [String; N_CO],
 
     pub(crate) wire_names: HashMap<WireID, String>,
     pub(crate) gates: Vec<Gate>,
@@ -53,21 +53,21 @@ macro_rules! define_gate_fn {
     };
 }
 
-impl<const N_I: usize, const N_CO: usize, const N_O: usize, const N_CI: usize>
-    Circuit<N_I, N_CO, N_O, N_CI>
+impl<const N_I: usize, const N_CI: usize, const N_O: usize, const N_CO: usize>
+    Circuit<N_I, N_CI, N_O, N_CO>
 {
     pub fn create(
         inputs: [&str; N_I],
-        counter_outputs: [&str; N_CO],
-        outputs: [&str; N_O],
         counter_inputs: [&str; N_CI],
+        outputs: [&str; N_O],
+        counter_outputs: [&str; N_CO],
         name: &str,
     ) -> (
         Self,
         [Wire; N_I],
-        [CounterWire; N_CO],
+        [CounterWire; N_CI],
         [CounterWire; N_O],
-        [Wire; N_CI],
+        [Wire; N_CO],
     ) {
         // 固定のシードでハッシュ化
         let cid: u32 = XxHash32::oneshot(0, name.as_bytes());
@@ -75,9 +75,9 @@ impl<const N_I: usize, const N_CO: usize, const N_O: usize, const N_CI: usize>
             name: name.to_string(),
             id: CircuitID(cid),
             inputs: inputs.map(|s| s.to_string()),
-            counter_outputs: counter_outputs.map(|s| s.to_string()),
-            outputs: outputs.map(|s| s.to_string()),
             counter_inputs: counter_inputs.map(|s| s.to_string()),
+            outputs: outputs.map(|s| s.to_string()),
+            counter_outputs: counter_outputs.map(|s| s.to_string()),
             wire_names: HashMap::new(),
             gates: Vec::new(),
             next_wire_id: 1,
@@ -86,23 +86,24 @@ impl<const N_I: usize, const N_CO: usize, const N_O: usize, const N_CI: usize>
 
         // 入出力に対応する Wire 生成
         let mut input_wires = inputs.map(|s| circuit.generate_wire(s.to_string()));
-        let mut counter_output_wires =
-            counter_outputs.map(|s| circuit.generate_counter_wire(s.to_string()));
+        let mut counter_input_wires =
+            counter_inputs.map(|s| circuit.generate_counter_wire(s.to_string()));
         let mut output_wires = outputs.map(|s| circuit.generate_counter_wire(s.to_string()));
-        let mut counter_input_wires = counter_inputs.map(|s| circuit.generate_wire(s.to_string()));
+        let mut counter_output_wires =
+            counter_outputs.map(|s| circuit.generate_wire(s.to_string()));
 
         // 初期条件の drive, receive
         input_wires.iter_mut().for_each(|w| w.drive());
-        counter_output_wires.iter_mut().for_each(|w| w.receive());
+        counter_input_wires.iter_mut().for_each(|w| w.receive());
         output_wires.iter_mut().for_each(|w| w.receive());
-        counter_input_wires.iter_mut().for_each(|w| w.drive());
+        counter_output_wires.iter_mut().for_each(|w| w.drive());
 
         return (
             circuit,
             input_wires,
-            counter_output_wires,
-            output_wires,
             counter_input_wires,
+            output_wires,
+            counter_output_wires,
         );
     }
 
