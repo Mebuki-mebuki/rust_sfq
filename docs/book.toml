@@ -1,0 +1,5 @@
+[book]
+authors = ["Mebuki Oishi"]
+language = "en"
+src = "src"
+title = "RstSFQ Language Manual"
