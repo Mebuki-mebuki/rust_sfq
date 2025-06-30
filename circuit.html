@@ -3,8 +3,7 @@
     <head>
         <!-- Book generated using mdBook -->
         <meta charset="UTF-8">
-        <title>RustSFQ Language Manual</title>
-        <meta name="robots" content="noindex">
+        <title>Circuit - RustSFQ Language Manual</title>
 
 
         <!-- Custom HTML head -->
@@ -167,170 +166,7 @@
 
                 <div id="content" class="content">
                     <main>
-                        <h1 id="installation"><a class="header" href="#installation">Installation</a></h1>
-<p>RustSFQ is provided as a Rust library crate. To use it, you must first install Rust and its package manager, Cargo.</p>
-<h2 id="1-install-rust"><a class="header" href="#1-install-rust">1. Install Rust</a></h2>
-<p>Please install Rust by following the instructions on the official website:</p>
-<p><a href="https://www.rust-lang.org/tools/install">https://www.rust-lang.org/tools/install</a></p>
-<p>Installing Rust will also install Cargo, the tool used to manage Rust projects and packages.</p>
-<h2 id="2-create-a-new-rust-project"><a class="header" href="#2-create-a-new-rust-project">2. Create a New Rust Project</a></h2>
-<p>Once Cargo is installed, you can create a new Rust project using the following command:</p>
-<pre><code class="language-sh">cargo new my_rustsfq_project
-</code></pre>
-<h2 id="3-add-rustsfq-to-dependencies"><a class="header" href="#3-add-rustsfq-to-dependencies">3. Add RustSFQ to Dependencies</a></h2>
-<p>To use RustSFQ in your project, add it to your <code>Cargo.toml</code> under the <code>[dependencies]</code> section:</p>
-<pre><code class="language-toml">[dependencies]
-rust_sfq = "0.1"  # Replace with the actual version
-</code></pre>
-<h2 id="4-optional-using-vscode-and-rust-analyzer"><a class="header" href="#4-optional-using-vscode-and-rust-analyzer">4. Optional: Using VSCode and rust-analyzer</a></h2>
-<p>You can use any text editor to develop with RustSFQ, but we recommend using Visual Studio Code along with the <strong>rust-analyzer</strong> extension.</p>
-<p>Once installed, rust-analyzer provides powerful IDE features such as:</p>
-<ul>
-<li>Real-time type inference</li>
-<li>Inline compilation errors and warnings</li>
-<li>Code navigation and autocompletion</li>
-</ul>
-<p>These features significantly improve development productivity and code quality within the editor.</p>
-<div style="break-before: page; page-break-before: always;"></div><h1 id="getting-started-with-rustsfq"><a class="header" href="#getting-started-with-rustsfq">Getting Started with RustSFQ</a></h1>
-<p>This section walks you through a simple example that demonstrates the basic syntax and core functionality of the <strong>RustSFQ</strong> library.</p>
-<p>We’ll build a half-adder circuit and export it as a SPICE netlist.</p>
-<hr />
-<h2 id="example-half-adder-in-rustsfq"><a class="header" href="#example-half-adder-in-rustsfq">Example: Half Adder in RustSFQ</a></h2>
-<p>The following Rust program defines a half-adder circuit and generates a corresponding SPICE-format netlist.<br />
-We’ll review each part step-by-step below.</p>
-<pre><pre class="playground"><code class="language-rust">use rust_sfq::*;
-
-fn half_adder() -&gt; Circuit&lt;3, 0, 2, 0&gt; {
-    let (mut circuit, [a, b, clk], [], [c_out, s_out], []) =
-        Circuit::create(["a", "b", "clk"], [], ["c", "s"], [], "HalfAdder");
-
-    let (a1, a2) = circuit.split(a);
-    let (b1, b2) = circuit.split(b);
-    let (clk1, clk2) = circuit.split(clk);
-    circuit.label(&amp;clk1, "clk_1");
-
-    let c = circuit.and(a1, b1, clk1);
-    let s = circuit.xor_labeled(a2, b2, clk2, "s");
-
-    circuit.unify(c, c_out);
-    circuit.unify(s, s_out);
-
-    return circuit;
-}
-
-fn main() {
-    let ha = half_adder();
-    println!("{}", RsfqlibSpice::generate(&amp;ha));
-}</code></pre></pre>
-<div align="center">
-  <img src="./figures/half_adder.svg" alt="Half Adder Schematic" />
-</div>
-<h2 id="project-setup-and-import"><a class="header" href="#project-setup-and-import">Project Setup and Import</a></h2>
-<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
-</span><span class="boring">fn main() {
-</span>use rust_sfq::*;
-<span class="boring">}</span></code></pre></pre>
-<p>Start by importing all items from the <code>rust_sfq</code> crate. This gives you access to the main types like <code>Circuit</code>, <code>Wire</code>, and backend generators such as <code>RsfqlibSpice</code>.</p>
-<h2 id="creating-a-new-circuit"><a class="header" href="#creating-a-new-circuit">Creating a New Circuit</a></h2>
-<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
-</span><span class="boring">fn main() {
-</span>let (mut circuit, [a, b, clk], [], [c_out, s_out], []) =
-    Circuit::create(["a", "b", "clk"], [], ["c", "s"], [], "HalfAdder");
-<span class="boring">}</span></code></pre></pre>
-<p>This call to <code>Circuit::create()</code> initializes a new circuit with:</p>
-<ul>
-<li><strong>Inputs</strong>: <code>a</code>, <code>b</code>, <code>clk</code></li>
-<li><strong>Outputs</strong>: <code>c</code>, <code>s</code></li>
-<li><strong>Name</strong>: <code>"HalfAdder"</code></li>
-</ul>
-<p>The second and fourth arguments (empty arrays) represent <strong>CounterInputs</strong> and <strong>CounterOutputs</strong>, which are unused in this example.</p>
-<p>The returned values include:</p>
-<ul>
-<li>a mutable <code>Circuit</code> object</li>
-<li><code>Wire</code> objects for the inputs</li>
-<li><code>CounterWire</code> objects for outputs</li>
-</ul>
-<h2 id="splitting-wires-for-fan-out"><a class="header" href="#splitting-wires-for-fan-out">Splitting Wires for Fan-Out</a></h2>
-<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
-</span><span class="boring">fn main() {
-</span>let (a1, a2) = circuit.split(a);
-let (b1, b2) = circuit.split(b);
-let (clk1, clk2) = circuit.split(clk);
-<span class="boring">}</span></code></pre></pre>
-<p><code>Circuit</code> object has <code>split()</code> function, which takes one <code>Wire</code> object and returns two <code>Wire</code> objects.</p>
-<p>By calling this function, a SPLIT gate is added to the circuit.</p>
-<h2 id="labeling-wires"><a class="header" href="#labeling-wires">Labeling Wires</a></h2>
-<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
-</span><span class="boring">fn main() {
-</span>circuit.label(&amp;clk1, "clk_1");
-<span class="boring">}</span></code></pre></pre>
-<p>You can manually assign a label to any wire, which will appear in the generated netlist.<br />
-If you don’t provide a label, a unique name will be automatically assigned.</p>
-<h2 id="creating-gates"><a class="header" href="#creating-gates">Creating Gates</a></h2>
-<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
-</span><span class="boring">fn main() {
-</span>let c = circuit.and(a1, b1, clk1);
-let s = circuit.xor_labeled(a2, b2, clk2, "s");
-<span class="boring">}</span></code></pre></pre>
-<p>Logic gates such as <code>AND</code> and <code>XOR</code> are created by calling methods on the <code>Circuit</code> object.<br />
-In this example:</p>
-<ul>
-<li><code>and()</code> creates a carry gate</li>
-<li><code>xor_labeled()</code> creates a sum gate with a labeled output wire <code>"s"</code></li>
-</ul>
-<p><code>xor_labeled()</code> is a convenience wrapper for <code>xor()</code> followed by <code>label()</code>.</p>
-<h2 id="connecting-to-circuit-outputs"><a class="header" href="#connecting-to-circuit-outputs">Connecting to Circuit Outputs</a></h2>
-<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
-</span><span class="boring">fn main() {
-</span>circuit.unify(c, c_out);
-circuit.unify(s, s_out);
-<span class="boring">}</span></code></pre></pre>
-<p>To complete the circuit, connect each gate’s output to the corresponding circuit output using <code>unify()</code>.</p>
-<h2 id="exporting-the-circuit"><a class="header" href="#exporting-the-circuit">Exporting the Circuit</a></h2>
-<pre><pre class="playground"><code class="language-rust">fn half_adder() -&gt; Circuit&lt;3, 0, 2, 0&gt; {
-    ...
-    return circuit;
-}
-fn main() {
-    let ha = half_adder();
-    println!("{}", RsfqlibSpice::generate(&amp;ha));
-}</code></pre></pre>
-<p>The <code>half_adder()</code> function returns a fully constructed <code>Circuit</code> object.<br />
-This object is parameterized by the number of inputs, counter inputs, outputs, and counter outputs:<br />
-<code>Circuit&lt;3, 0, 2, 0&gt;</code>.</p>
-<p>The <code>RsfqlibSpice::generate()</code> function converts the circuit into a SPICE-format netlist based on the RSFQlib.<br />
-You can use a different backend (e.g. <code>RsfqlibVerilog</code>) to export in other formats.</p>
-<hr />
-<h2 id="running-the-program"><a class="header" href="#running-the-program">Running the Program</a></h2>
-<p>You can generate the SPICE netlist by compiling and running the program:</p>
-<pre><code class="language-sh">cargo run
-</code></pre>
-<p>This will print the netlist to standard output.</p>
-<h2 id="output-example-spice-netlist"><a class="header" href="#output-example-spice-netlist">Output: Example SPICE Netlist</a></h2>
-<p>Here is the SPICE netlist generated by the example:</p>
-<pre><code class="language-text">.subckt HalfAdder a b clk c s
-XSPLIT1 a _XSPLIT1_q1 _XSPLIT1_q2 THmitll_SPLIT
-XSPLIT2 b _XSPLIT2_q1 _XSPLIT2_q2 THmitll_SPLIT
-XSPLIT3 clk clk_1 _XSPLIT3_q2 THmitll_SPLIT
-XAND4 _XSPLIT1_q1 _XSPLIT2_q1 clk_1 c THmitll_AND
-XXOR5 _XSPLIT1_q2 _XSPLIT2_q2 _XSPLIT3_q2 s THmitll_XOR
-.ends
-</code></pre>
-<ul>
-<li>Each logic gate is named sequentially (e.g., <code>XAND4</code>, <code>XXOR5</code>)</li>
-<li>Wires starting with an underscore (e.g., <code>_XSPLIT1_q1</code>) are automatically generated</li>
-<li>Labels like <code>clk_1</code> and <code>s</code> appear as specified in the code</li>
-</ul>
-<hr />
-<h2 id="summary"><a class="header" href="#summary">Summary</a></h2>
-<p>In this example, you learned how to:</p>
-<ul>
-<li>Create a new circuit using <code>Circuit::create()</code></li>
-<li>Instantiate gates and label outputs</li>
-<li>Connect gate outputs to declared circuit outputs</li>
-<li>Export the circuit as a netlist</li>
-</ul>
-<div style="break-before: page; page-break-before: always;"></div><h1 id="circuit"><a class="header" href="#circuit">Circuit</a></h1>
+                        <h1 id="circuit"><a class="header" href="#circuit">Circuit</a></h1>
 <h2 id="overview"><a class="header" href="#overview">Overview</a></h2>
 <p>The <code>Circuit</code> struct corresponds to a subcircuit in SPICE and serves as the main object for constructing SFQ circuits in RustSFQ.</p>
 <p>The <code>Circuit</code> instance holds all the necessary information to generate a netlist.</p>
@@ -506,6 +342,9 @@ fn main() {
 
                     <nav class="nav-wrapper" aria-label="Page navigation">
                         <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="getting_started.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
 
 
                         <div style="clear: both"></div>
@@ -514,6 +353,9 @@ fn main() {
             </div>
 
             <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="getting_started.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
 
             </nav>
 
@@ -537,11 +379,6 @@ fn main() {
 
         <!-- Custom JS scripts -->
 
-        <script>
-        window.addEventListener('load', function() {
-            window.setTimeout(window.print, 100);
-        });
-        </script>
 
     </div>
     </body>
