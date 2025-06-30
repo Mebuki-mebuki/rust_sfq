@@ -2,4 +2,4 @@
 authors = ["Mebuki Oishi"]
 language = "en"
 src = "src"
-title = "RstSFQ Language Manual"
+title = "RustSFQ Language Manual"

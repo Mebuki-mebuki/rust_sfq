@@ -156,7 +156,7 @@ impl<const N_I: usize, const N_CI: usize, const N_O: usize, const N_CO: usize>
 
     //-------------------- Gate Functions ----------------------//
 
-    define_gate_fn!(jtl, jtl_labeld, Jtl, [a]);
+    define_gate_fn!(jtl, jtl_labeled, Jtl, [a]);
     define_gate_fn!(merge, merge_labeled, Merge, [a, b]);
     define_gate_fn!(and, and_labeled, And, [a, b, clk]);
     define_gate_fn!(or, or_labeled, Or, [a, b, clk]);
@@ -192,7 +192,7 @@ impl<const N_I: usize, const N_CI: usize, const N_O: usize, const N_CO: usize>
         return (q1, q2);
     }
 
-    pub fn split_labeld(&mut self, a: Wire, label1: &str, label2: &str) -> (Wire, Wire) {
+    pub fn split_labeled(&mut self, a: Wire, label1: &str, label2: &str) -> (Wire, Wire) {
         let (wire1, wire2) = self.split(a);
         self.label(&wire1, label1);
         self.label(&wire2, label2);
@@ -299,7 +299,7 @@ impl<const N_I: usize, const N_CI: usize, const N_O: usize, const N_CO: usize>
         &mut self,
         circuit: &Circuit<M_I, M_CI, M_O, M_CO>,
         mut inputs: [Wire; M_I],
-        mut counter_inputs: [CounterWire; N_CI],
+        mut counter_inputs: [CounterWire; M_CI],
     ) -> ([Wire; M_O], [CounterWire; M_CO]) {
         // 入力Wireの処理
         assert!(inputs.iter().all(|w| w.circuit_id() == self.id));
