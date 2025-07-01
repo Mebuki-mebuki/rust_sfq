@@ -8,6 +8,8 @@
 > ⚠️ **This project is in active development and considered beta.**
 > APIs and behavior may change without notice.
 
+**Documentation** is available at: <https://mebuki-mebuki.github.io/rust_sfq/>
+
 ## Features
 
 - **Gate-level SFQ circuit design in Rust**  
@@ -22,10 +24,9 @@
 - **Multiple simulation netlist formats supported**  
   Export circuits to various netlist formats for use in different SFQ simulation or analysis tools.
 
-
 ## Example
 
-### DSL description for half adder:
+### DSL description for half adder
 
 ```rust
 use rust_sfq::*;
@@ -49,7 +50,8 @@ fn main() {
 }
 ```
 
-### Output in SPICE format:
+### Output in SPICE format
+
 ```
 .subckt HalfAdder a b clk  c s 
 XSPLIT1 a _XSPLIT1_q1 _XSPLIT1_q2 THmitll_SPLIT
