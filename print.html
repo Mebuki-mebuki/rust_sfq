@@ -501,6 +501,363 @@ fn main() {
     println!("{}", Backend::generate(&amp;half_adder));
     println!("{}", Backend::generate(&amp;full_adder));
 }</code></pre></pre>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="wire-and-counterwire"><a class="header" href="#wire-and-counterwire">Wire and CounterWire</a></h1>
+<h2 id="overview-1"><a class="header" href="#overview-1">Overview</a></h2>
+<p><code>Wire</code> and <code>CounterWire</code> represent electrical nets in a netlist and are used to describe the connections between gates within a circuit.</p>
+<p>A <code>Wire</code> appears when constructing a circuit in a forward direction. It represents a net that has <strong>already been driven</strong>, but has <strong>not yet been received</strong>.<br />
+A <code>CounterWire</code> is used when constructing circuits in a counter-flow manner, such as in counter-flow clocking. It represents a net that has <strong>already been received</strong>, but has <strong>not yet been driven</strong>.</p>
+<p>These objects are governed by Rust's ownership system, which ensures that each wire has exactly <strong>one driver and one receiver</strong>.</p>
+<h2 id="generating-wires"><a class="header" href="#generating-wires">Generating Wires</a></h2>
+<p>Although <code>Wire</code> and <code>CounterWire</code> are structs, their constructors are private. Users <strong>cannot instantiate them freely</strong>.</p>
+<p>They can only be obtained in the following ways:</p>
+<ul>
+<li>As circuit's inputs or outputs when calling <code>Circuit::create()</code></li>
+<li>As outputs from gate functions such as <code>and()</code>, <code>xor()</code>, etc.</li>
+<li>From loop construction using <code>gen_loop()</code></li>
+</ul>
+<p>Also, <code>Wire</code> instances cannot be cloned.</p>
+<h2 id="using-wires"><a class="header" href="#using-wires">Using Wires</a></h2>
+<p>Wires are used in the following scenarios:</p>
+<ul>
+<li><strong>Gate inputs</strong>: You pass <code>Wire</code> instances as arguments to gate functions like <code>circuit.and(a, b, clk)</code>. In doing so, ownership of the <code>Wire</code> is moved and cannot be reused.</li>
+<li><strong>Labeling</strong>: If you want to assign a label to a wire, pass a reference to <code>label()</code> like <code>circuit.label(&amp;a)</code>.</li>
+<li><strong>Unification</strong>: When connecting a <code>Wire</code> and a <code>CounterWire</code>, you pass them to <code>unify()</code> like <code>circuit.unify(a, b)</code>. The <code>Wire</code> and <code>CounterWire</code> is consumed (ownership is moved).</li>
+</ul>
+<p>The reason <code>Circuit::create()</code> returns <strong><code>CounterWire</code>s for outputs</strong> is because those nets are "to be driven." You use <code>unify()</code> to connect a <code>Wire</code> (already driven) to these <code>CounterWire</code>s to complete the connection.</p>
+<h2 id="prevention-of-multiple-use"><a class="header" href="#prevention-of-multiple-use">Prevention of Multiple Use</a></h2>
+<p>In SFQ circuits, multiple receivers (fanout) from a single wire is prohibited. This restriction is <strong>enforced statically</strong> via Rust’s ownership system.</p>
+<p>When you use a <code>Wire</code> as an input to a gate function, ownership is moved.</p>
+<p>You cannot pass the same <code>Wire</code> to another gate function afterward, preventing accidental multi-use.</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>let (mut circuit, [a, clk], [], [], []) =
+    Circuit::create(["a", "clk"], [], [], [], "invalid");
+
+let c = circuit.dff(a, clk);
+let d = circuit.not(a, clk);    // use of moved value. failed to compile
+<span class="boring">}</span></code></pre></pre>
+<h2 id="prevention-of-unused-wires"><a class="header" href="#prevention-of-unused-wires">Prevention of Unused Wires</a></h2>
+<p>Rust’s ownership system guarantees that a <code>Wire</code> is used <strong>at most once</strong>, but <strong>not necessarily at least once</strong>.</p>
+<p>In most cases, an unused <code>Wire</code> will be caught by the Rust compiler as an unused variable.
+However, it is possible to bypass this warning like this:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>let (mut circuit, [a, b, c], [], [], []) =
+    Circuit::create(["a", "b", "c"], [], [], [], "invalid");
+
+// underscored variable name
+let _a = circuit.jtl(a);
+
+// discard return value
+circuit.jtl(b);
+
+// irrelevant use
+println!("{:?}", c.type_id());
+<span class="boring">}</span></code></pre></pre>
+<p>To catch such silent mistakes, RustSFQ performs <strong>runtime validation</strong>:</p>
+<ul>
+<li>Each <code>Wire</code> internally tracks a private counter for receivers.</li>
+<li>When a <code>Wire</code> is dropped (i.e., its destructor is called), RustSFQ checks whether it has exactly one receiver.</li>
+<li>If not, a runtime error is reported.</li>
+</ul>
+<p>This mechanism ensures correctness even in subtle or intentionally suppressed cases.</p>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="for-rust-beginners"><a class="header" href="#for-rust-beginners">For Rust Beginners</a></h1>
+<p>This page is intended for readers who have <strong>never used Rust before</strong>.<br />
+It explains the <strong>minimum Rust knowledge required to use RustSFQ</strong>, including basic syntax, data types, ownership, and how to run your first Rust program.</p>
+<hr />
+<h1 id="hello-world"><a class="header" href="#hello-world">Hello World</a></h1>
+<h2 id="creating-a-project"><a class="header" href="#creating-a-project">Creating a Project</a></h2>
+<p>To create a new project using Cargo (Rust’s build system and package manager), use the following command:</p>
+<pre><code class="language-bash">cargo new hello_rust
+</code></pre>
+<p>This creates a new folder <code>hello_rust</code> with the basic project structure.</p>
+<h2 id="the-main-function"><a class="header" href="#the-main-function">The <code>main</code> Function</a></h2>
+<p>In Rust, the execution of any program begins at the <code>main</code> function. This is the <strong>entry point</strong> of the program.</p>
+<p>Here is the simplest possible Rust program:</p>
+<pre><pre class="playground"><code class="language-rust">fn main() {
+    println!("Hello, World!");
+}</code></pre></pre>
+<h2 id="running-a-project"><a class="header" href="#running-a-project">Running a Project</a></h2>
+<p>Navigate into the project directory and run it:</p>
+<pre><code class="language-bash">cd hello_rust
+cargo run
+</code></pre>
+<p>This will compile the code and execute the <code>main</code> function, producing the output:</p>
+<pre><code class="language-text">Hello, World!
+</code></pre>
+<h2 id="the-print-macro"><a class="header" href="#the-print-macro">The <code>print!</code> Macro</a></h2>
+<p>Rust uses <strong>macros</strong> for certain language features, and printing to the console is done using the <code>print!</code> macro (note the exclamation mark <code>!</code>).</p>
+<p><code>println!</code> macro prints text with a newline.</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>print!("Hello");
+println!(", World!");
+<span class="boring">}</span></code></pre></pre>
+<p>output:</p>
+<pre><code class="language-text">Hello, World!
+</code></pre>
+<p>You can also print variables by using <code>{}</code> inside the string:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>let name = "Alice";
+println!("Hello, {}!", name); // Hello, Alice!
+let x = 1;
+let y = 2;
+println!("{} + {} = {}", x, y, x + y);  // 1 + 2 = 3
+<span class="boring">}</span></code></pre></pre>
+<hr />
+<h1 id="variables-and-types-in-rust"><a class="header" href="#variables-and-types-in-rust">Variables and Types in Rust</a></h1>
+<p>In Rust, variables are declared using the <code>let</code> keyword. By default, variables are <strong>immutable</strong>, but you can make them mutable by adding <code>mut</code>.</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>let x = 5;
+println!("x = {}", x);  // x = 5
+// x = 6; // Error: `x` is immutable
+
+let mut y = 10;
+y = 20; // Allowed: `y` is mutable
+println!("y = {}", y);  // y = 20
+<span class="boring">}</span></code></pre></pre>
+<h2 id="shadowing-re-declaring-a-variable"><a class="header" href="#shadowing-re-declaring-a-variable">Shadowing (Re-declaring a Variable)</a></h2>
+<p>Rust allows you to re-declare a variable using <code>let</code> again. This is called <strong>shadowing</strong> and can be used to change the value.</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>let z = 100;
+let z = z + 1;
+println!("z = {}", z);  // z = 101
+<span class="boring">}</span></code></pre></pre>
+<h2 id="integers"><a class="header" href="#integers">Integers</a></h2>
+<p>Rust has both signed and unsigned integer types with an explicit size, such as:</p>
+<ul>
+<li><code>i8</code>, <code>i16</code>, <code>i32</code>, <code>i64</code>, <code>i128</code>: signed</li>
+<li><code>u8</code>, <code>u16</code>, <code>u32</code>, <code>u64</code>, <code>u128</code>: unsigned</li>
+</ul>
+<p>These types depend on the system architecture (32-bit or 64-bit):</p>
+<ul>
+<li><code>isize</code> = signed integer the size of a pointer</li>
+<li><code>usize</code> = unsigned integer the size of a pointer</li>
+</ul>
+<p>By default:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>let a = 10;      // inferred as i32
+let b = 20u64;   // explicitly u64
+let c: i16 = -5; // type annotation
+<span class="boring">}</span></code></pre></pre>
+<h2 id="type-annotations"><a class="header" href="#type-annotations">Type Annotations</a></h2>
+<p>While Rust often infers types automatically, you can specify them explicitly when needed:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>let x: u32 = 123;
+let y: f64 = 3.1415;
+let flag: bool = true;
+<span class="boring">}</span></code></pre></pre>
+<h2 id="string-types"><a class="header" href="#string-types">String Types</a></h2>
+<p>Rust has two kinds of strings:</p>
+<ol>
+<li>String slices (<code>&amp;str</code>): used for fixed string data</li>
+<li><code>String</code>: a growable heap-allocated string</li>
+</ol>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>let name: &amp;str = "Alice";
+println!("{}", name);   // Alice
+
+let mut greeting = String::from("Hello");
+greeting.push_str(", World!");
+println!("{}", greeting);   // Hello, World!
+<span class="boring">}</span></code></pre></pre>
+<h3 id="converting-string-to-str"><a class="header" href="#converting-string-to-str">Converting <code>String</code> to <code>&amp;str</code></a></h3>
+<ol>
+<li>Using <code>.as_str()</code></li>
+<li>Using <code>&amp;</code> for implicit conversion</li>
+</ol>
+<pre><pre class="playground"><code class="language-rust">fn print_str(s: &amp;str) {
+    println!("{}", s);
+}
+
+fn main() {
+    let s = String::from("Hello");
+
+    print_str(s.as_str());  // OK. explicit conversion
+    print_str(&amp;s);          // OK. implicit conversion from &amp;String to &amp;str
+    print_str(s);           // NG. Cannot implicitly convert from String to &amp;str
+}</code></pre></pre>
+<hr />
+<h1 id="functions-1"><a class="header" href="#functions-1">Functions</a></h1>
+<p>In Rust, functions are defined using the <code>fn</code> keyword. All parameters and return types must be explicitly typed.<br />
+Unlike Python or JavaScript, Rust does not support default parameter values.<br />
+You must explicitly pass all arguments when calling a function.</p>
+<h2 id="basic-syntax"><a class="header" href="#basic-syntax">Basic Syntax</a></h2>
+<pre><pre class="playground"><code class="language-rust">fn add(a: i32, b: i32) -&gt; i32 {
+    a + b
+}
+
+fn square(x: i32) -&gt; i32 {
+    return x * x;
+}
+
+fn main() {
+    let sum = add(3, 5);
+    let sq = square(sum);
+}</code></pre></pre>
+<ul>
+<li>
+<p><code>fn</code> — starts a function definition</p>
+</li>
+<li>
+<p><code>(a: i32, b: i32)</code> — parameters with required type annotations</p>
+</li>
+<li>
+<p><code>-&gt; i32</code> — return type (also required)</p>
+</li>
+<li>
+<p>The final expression (without a semicolon) is returned</p>
+<ul>
+<li>You can also use <code>return</code> (with a semicolon)</li>
+</ul>
+</li>
+</ul>
+<hr />
+<h1 id="ownership-and-references"><a class="header" href="#ownership-and-references">Ownership and References</a></h1>
+<p>Rust has a unique <strong>ownership system</strong> that ensures memory safety without a garbage collector.</p>
+<h2 id="copy-vs-move"><a class="header" href="#copy-vs-move">Copy vs Move</a></h2>
+<p>Some simple types, like integers, implement the <code>Copy</code> trait.<br />
+This means assigning them creates a copy, and both variables can be used.</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>let a = 5;
+let b = a; // a is copied into b
+
+println!("a = {}, b = {}", a, b); // OK. both are usable
+<span class="boring">}</span></code></pre></pre>
+<p>However, <strong>complex types like <code>String</code> do not implement <code>Copy</code></strong>.<br />
+Instead, assigning them transfers ownership — this is called a <strong>move</strong>.</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>let s1 = String::from("hello");
+let s2 = s1; // ownership moves from s1 to s2
+
+// println!("{}", s1); // Error: s1 was moved
+println!("{}", s2);   // OK
+<span class="boring">}</span></code></pre></pre>
+<p>Once ownership has moved, the original variable (<code>s1</code>) can no longer be used.</p>
+<h2 id="references-borrowing-instead-of-moving"><a class="header" href="#references-borrowing-instead-of-moving">References: Borrowing Instead of Moving</a></h2>
+<p>To use a value <strong>without taking ownership</strong>, you can <strong>borrow</strong> it by using a reference (<code>&amp;</code>).</p>
+<pre><pre class="playground"><code class="language-rust">fn print_message(msg: &amp;String) {
+    println!("Message: {}", msg);
+}
+
+fn main() {
+    let s = String::from("Rust");
+    print_message(&amp;s); // pass by reference
+    println!("{}", s); // OK. still usable
+}</code></pre></pre>
+<ul>
+<li><code>&amp;s</code> is a immutable reference to <code>s</code></li>
+<li>Ownership is not transferred</li>
+<li>The original variable remains usable</li>
+</ul>
+<h2 id="mutable-references"><a class="header" href="#mutable-references">Mutable References</a></h2>
+<p>If you want to <strong>modify</strong> a value through a reference, use a <strong>mutable reference</strong> (<code>&amp;mut</code>).</p>
+<pre><pre class="playground"><code class="language-rust">fn change(s: &amp;mut String) {
+    s.push_str(", Rust!");
+}
+
+fn main() {
+    let mut s = String::from("Hi");
+    change(&amp;mut s); // pass by mutable reference
+    println!("{}", s); // "Hi, Rust!"
+}</code></pre></pre>
+<h2 id="reference-safety-rules"><a class="header" href="#reference-safety-rules">Reference Safety Rules</a></h2>
+<ul>
+<li><strong>Only one</strong> mutable reference (<code>&amp;mut</code>) is allowed at a time</li>
+<li>A mutable reference (<code>&amp;mut</code>) and immutable reference (<code>&amp;</code>) <strong>cannot coexist</strong></li>
+<li><strong>Multiple</strong> immutable references (<code>&amp;</code>) are allowed simultaneously</li>
+</ul>
+<p>These rules are enforced at compile time, ensuring memory safety without the need for runtime checks.</p>
+<hr />
+<h1 id="array-vector-and-tuple"><a class="header" href="#array-vector-and-tuple">Array, Vector, and Tuple</a></h1>
+<p>Rust provides multiple ways to store collections of values.<br />
+Here are the most common types: <strong>array</strong>, <strong>vector</strong>, and <strong>tuple</strong>.</p>
+<h2 id="array-t-n"><a class="header" href="#array-t-n">Array <code>[T; N]</code></a></h2>
+<ul>
+<li>Fixed-size, stack-allocated collection of elements of the same type.</li>
+<li>Size <code>N</code> must be known at compile time.</li>
+<li>You cannot resize an array after creation.</li>
+<li>Arrays can also be unpacked (destructured) just like tuples.</li>
+</ul>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>let arr: [i32; 3] = [10, 20, 30];
+println!("{}", arr[0]); // 10
+
+let [x, y, z] = arr;
+println!("x = {}, y = {}, z = {}", x, y, z); // x = 10, y = 20, z = 30
+<span class="boring">}</span></code></pre></pre>
+<h2 id="vector-vect"><a class="header" href="#vector-vect">Vector <code>Vec&lt;T&gt;</code></a></h2>
+<ul>
+<li>Growable, heap-allocated list of elements.</li>
+<li>All elements must be the same type.</li>
+<li>You cannot destructure a vector in the same way as an array.</li>
+</ul>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>let mut vec: Vec&lt;i32&gt; = Vec::new();
+vec.push(1);
+vec.push(2);
+println!("{:?}", vec); // [1, 2]
+<span class="boring">}</span></code></pre></pre>
+<p>Shortcut initialization with macro:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>let v = vec![1, 2, 3];
+<span class="boring">}</span></code></pre></pre>
+<h2 id="tuple-t1-t2-"><a class="header" href="#tuple-t1-t2-">Tuple <code>(T1, T2, ...)</code></a></h2>
+<ul>
+<li>Group values of <strong>different types</strong> together.</li>
+<li>Fixed size and order matters.</li>
+</ul>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>let tup: (i32, bool, &amp;str) = (42, true, "hello");
+let (a, b, c) = tup; // destructuring
+
+println!("First: {}", tup.0); // 42
+<span class="boring">}</span></code></pre></pre>
+<p>Tuples are especially useful for returning multiple values from a function.</p>
+<hr />
+<h1 id="using-modules"><a class="header" href="#using-modules">Using Modules</a></h1>
+<p>Rust uses a modular system to organize code. When working with external crates (libraries) or internal modules, you use the <code>use</code> keyword to bring items into scope.</p>
+<h2 id="external-libraries"><a class="header" href="#external-libraries">External Libraries</a></h2>
+<p>To use an external library (crate), you must:</p>
+<ol>
+<li>
+<p>Add it to your <code>Cargo.toml</code> dependencies:</p>
+<pre><code class="language-toml">[dependencies]
+rust_sfq = "0.1"
+</code></pre>
+</li>
+<li>
+<p>Then import items from the crate in your code:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use rust_sfq::*;
+<span class="boring">}</span></code></pre></pre>
+</li>
+</ol>
+<p>Rust will download the crate from <a href="https://crates.io">crates.io</a> the first time you build the project.</p>
+<p>This brings all public items from the crate into scope, including:</p>
+<ul>
+<li><code>Circuit</code></li>
+<li><code>Wire</code>, <code>CounterWire</code></li>
+<li>Backend modules like <code>RsfqlibSpice</code> or <code>RsfqlibVerilog</code></li>
+</ul>
+<p>If you prefer more explicit imports:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use rust_sfq::{Circuit, RsfqlibSpice};
+<span class="boring">}</span></code></pre></pre>
 
                     </main>
 
