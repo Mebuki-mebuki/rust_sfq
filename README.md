@@ -52,7 +52,7 @@ fn main() {
 
 ### Output in SPICE format
 
-```
+```text
 .subckt HalfAdder a b clk  c s 
 XSPLIT1 a _XSPLIT1_q1 _XSPLIT1_q2 THmitll_SPLIT
 XSPLIT2 b _XSPLIT2_q1 _XSPLIT2_q2 THmitll_SPLIT
@@ -68,5 +68,5 @@ Add this crate to your `Cargo.toml`:
 
 ```toml
 [dependencies]
-sfq_dsl = "0.1"
+rust_sfq = "0.1"
 ```
