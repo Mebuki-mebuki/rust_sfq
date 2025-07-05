@@ -1,3 +1,4 @@
+use colored::Colorize;
 use std::collections::HashMap;
 use twox_hash::XxHash32;
 
@@ -112,8 +113,8 @@ impl<const N_I: usize, const N_CI: usize, const N_O: usize, const N_CO: usize>
         self.next_wire_id += 1;
         assert!(
             self.wire_names.values().all(|v| v != &name),
-            "\"{}\" is already exist!",
-            name
+            "{}",
+            format!("Wire `{}` is already exist!", name).red()
         );
         self.wire_names.insert(wid, name);
         return Wire::new(wid, self.id);
@@ -124,8 +125,8 @@ impl<const N_I: usize, const N_CI: usize, const N_O: usize, const N_CO: usize>
         self.next_wire_id += 1;
         assert!(
             self.wire_names.values().all(|v| v != &name),
-            "\"{}\" is already exist!",
-            name
+            "{}",
+            format!("Wire `{}` is already exist!", name).red()
         );
         self.wire_names.insert(wid, name);
         return CounterWire::new(wid, self.id);
@@ -144,13 +145,17 @@ impl<const N_I: usize, const N_CI: usize, const N_O: usize, const N_CO: usize>
         T: HasWireID,
     {
         assert!(wire.circuit_id() == self.id);
+        let old_name = self.wire_names.get(&wire.wire_id()).unwrap();
         assert!(
-            self.wire_names
-                .get(&wire.wire_id())
-                .unwrap()
-                .starts_with("_")
+            old_name.starts_with("_"),
+            "{}",
+            format!("Wire `{}` is already labeled!", old_name).red()
         );
-        assert!(!label.starts_with("_"));
+        assert!(
+            !label.starts_with("_"),
+            "{}",
+            format!("Label `{}` must not start with underscore!", label).red()
+        );
         self.wire_names.insert(wire.wire_id(), label.to_string());
     }
 
@@ -373,7 +378,11 @@ impl<const N_I: usize, const N_CI: usize, const N_O: usize, const N_CO: usize>
         let named2 = !name2.starts_with("_");
 
         if named1 && named2 {
-            assert!(name1 == name2, "conflict names: {}, {}", name1, name2);
+            assert!(
+                name1 == name2,
+                "{}",
+                format!("Conflict names in unify: `{}`, `{}`!", name1, name2).red()
+            );
             self.wire_names.insert(cwire.wire_id(), name1.clone());
         } else if named2 {
             self.wire_names.insert(wire.wire_id(), name2.clone());

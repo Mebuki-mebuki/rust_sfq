@@ -1,4 +1,5 @@
 use crate::id::{CircuitID, WireID};
+use colored::Colorize;
 
 pub(crate) trait HasWireID {
     fn wire_id(&self) -> WireID;
@@ -39,12 +40,17 @@ macro_rules! define_wire_type {
         // Drop時にdriver_countとreceiver_countが1であることをチェック
         impl Drop for $name {
             fn drop(&mut self) {
-                assert!(
-                    self.driver_count == 1 && self.receiver_count == 1,
-                    "drivers: {}, receivers: {}",
-                    self.driver_count,
-                    self.receiver_count
-                );
+                if (!std::thread::panicking()) {
+                    assert!(
+                        self.driver_count == 1 && self.receiver_count == 1,
+                        "{}",
+                        format!(
+                            "Fan-in or Fan-out is invalid: drivers: {}, receivers: {}!",
+                            self.driver_count, self.receiver_count
+                        )
+                        .red()
+                    );
+                }
             }
         }
 
