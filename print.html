@@ -561,6 +561,27 @@ println!("{:?}", c.type_id());
 <li>If not, a runtime error is reported.</li>
 </ul>
 <p>This mechanism ensures correctness even in subtle or intentionally suppressed cases.</p>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="available-gates-and-backends"><a class="header" href="#available-gates-and-backends">Available Gates and Backends</a></h1>
+<h2 id="compatibility-table-as-of-version-012"><a class="header" href="#compatibility-table-as-of-version-012">Compatibility table (as of version 0.1.2)</a></h2>
+<div class="table-wrapper"><table><thead><tr><th>Gate</th><th style="text-align: center">RsfqlibSpice</th><th style="text-align: center">RsfqlibVerilog</th></tr></thead><tbody>
+<tr><td>JTL</td><td style="text-align: center">✅</td><td style="text-align: center">✅</td></tr>
+<tr><td>SPLIT</td><td style="text-align: center">✅</td><td style="text-align: center">✅</td></tr>
+<tr><td>MERGE</td><td style="text-align: center">✅</td><td style="text-align: center">✅</td></tr>
+<tr><td>AND</td><td style="text-align: center">✅</td><td style="text-align: center">✅</td></tr>
+<tr><td>OR</td><td style="text-align: center">✅</td><td style="text-align: center">✅</td></tr>
+<tr><td>XOR</td><td style="text-align: center">✅</td><td style="text-align: center">✅</td></tr>
+<tr><td>NOT</td><td style="text-align: center">✅</td><td style="text-align: center">✅</td></tr>
+<tr><td>XNOR</td><td style="text-align: center">✅</td><td style="text-align: center">✅</td></tr>
+<tr><td>DFF</td><td style="text-align: center">✅</td><td style="text-align: center">✅</td></tr>
+<tr><td>NDRO</td><td style="text-align: center">✅</td><td style="text-align: center">✅</td></tr>
+<tr><td>BUFF</td><td style="text-align: center">✅</td><td style="text-align: center">✅</td></tr>
+<tr><td>ZERO_ASYNC</td><td style="text-align: center">✅</td><td style="text-align: center">✅</td></tr>
+</tbody></table>
+</div>
+<h2 id="backends"><a class="header" href="#backends">Backends</a></h2>
+<ul>
+<li>RSFQlib (<a href="https://github.com/sunmagnetics/RSFQlib">https://github.com/sunmagnetics/RSFQlib</a>)</li>
+</ul>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="for-rust-beginners"><a class="header" href="#for-rust-beginners">For Rust Beginners</a></h1>
 <p>This page is intended for readers who have <strong>never used Rust before</strong>.<br />
 It explains the <strong>minimum Rust knowledge required to use RustSFQ</strong>, including basic syntax, data types, ownership, and how to run your first Rust program.</p>
