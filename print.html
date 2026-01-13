@@ -13,21 +13,20 @@
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta name="theme-color" content="#ffffff">
 
-        <link rel="icon" href="favicon.svg">
-        <link rel="shortcut icon" href="favicon.png">
-        <link rel="stylesheet" href="css/variables.css">
-        <link rel="stylesheet" href="css/general.css">
-        <link rel="stylesheet" href="css/chrome.css">
-        <link rel="stylesheet" href="css/print.css" media="print">
+        <link rel="icon" href="favicon-de23e50b.svg">
+        <link rel="shortcut icon" href="favicon-8114d1fc.png">
+        <link rel="stylesheet" href="css/variables-8adf115d.css">
+        <link rel="stylesheet" href="css/general-2459343d.css">
+        <link rel="stylesheet" href="css/chrome-ae938929.css">
+        <link rel="stylesheet" href="css/print-9e4910d8.css" media="print">
 
         <!-- Fonts -->
-        <link rel="stylesheet" href="FontAwesome/css/font-awesome.css">
-        <link rel="stylesheet" href="fonts/fonts.css">
+        <link rel="stylesheet" href="fonts/fonts-9644e21d.css">
 
         <!-- Highlight.js Stylesheets -->
-        <link rel="stylesheet" id="highlight-css" href="highlight.css">
-        <link rel="stylesheet" id="tomorrow-night-css" href="tomorrow-night.css">
-        <link rel="stylesheet" id="ayu-highlight-css" href="ayu-highlight.css">
+        <link rel="stylesheet" id="mdbook-highlight-css" href="highlight-493f70e1.css">
+        <link rel="stylesheet" id="mdbook-tomorrow-night-css" href="tomorrow-night-4c0ae647.css">
+        <link rel="stylesheet" id="mdbook-ayu-highlight-css" href="ayu-highlight-3fdfc3ac.css">
 
         <!-- Custom theme stylesheets -->
 
@@ -37,9 +36,10 @@
             const path_to_root = "";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
+            window.path_to_searchindex_js = "searchindex-21011637.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="toc.js"></script>
+        <script src="toc-1d5bf3ce.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -53,7 +53,7 @@
             </div>
         </div>
     </div>
-    <div id="body-container">
+    <div id="mdbook-body-container">
         <!-- Work around some values being stored in localStorage wrapped in quotes -->
         <script>
             try {
@@ -82,56 +82,59 @@
             html.classList.add("js");
         </script>
 
-        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+        <input type="checkbox" id="mdbook-sidebar-toggle-anchor" class="hidden">
 
         <!-- Hide / unhide sidebar before it is displayed -->
         <script>
             let sidebar = null;
-            const sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            const sidebar_toggle = document.getElementById("mdbook-sidebar-toggle-anchor");
             if (document.body.clientWidth >= 1080) {
                 try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
                 sidebar = sidebar || 'visible';
             } else {
                 sidebar = 'hidden';
+                sidebar_toggle.checked = false;
             }
-            sidebar_toggle.checked = sidebar === 'visible';
-            html.classList.remove('sidebar-visible');
-            html.classList.add("sidebar-" + sidebar);
+            if (sidebar === 'visible') {
+                sidebar_toggle.checked = true;
+            } else {
+                html.classList.remove('sidebar-visible');
+            }
         </script>
 
-        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+        <nav id="mdbook-sidebar" class="sidebar" aria-label="Table of contents">
             <!-- populated by js -->
             <mdbook-sidebar-scrollbox class="sidebar-scrollbox"></mdbook-sidebar-scrollbox>
             <noscript>
                 <iframe class="sidebar-iframe-outer" src="toc.html"></iframe>
             </noscript>
-            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+            <div id="mdbook-sidebar-resize-handle" class="sidebar-resize-handle">
                 <div class="sidebar-resize-indicator"></div>
             </div>
         </nav>
 
-        <div id="page-wrapper" class="page-wrapper">
+        <div id="mdbook-page-wrapper" class="page-wrapper">
 
             <div class="page">
-                <div id="menu-bar-hover-placeholder"></div>
-                <div id="menu-bar" class="menu-bar sticky">
+                <div id="mdbook-menu-bar-hover-placeholder"></div>
+                <div id="mdbook-menu-bar" class="menu-bar sticky">
                     <div class="left-buttons">
-                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
-                            <i class="fa fa-bars"></i>
+                        <label id="mdbook-sidebar-toggle" class="icon-button" for="mdbook-sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="mdbook-sidebar">
+                            <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M0 96C0 78.3 14.3 64 32 64H416c17.7 0 32 14.3 32 32s-14.3 32-32 32H32C14.3 128 0 113.7 0 96zM0 256c0-17.7 14.3-32 32-32H416c17.7 0 32 14.3 32 32s-14.3 32-32 32H32c-17.7 0-32-14.3-32-32zM448 416c0 17.7-14.3 32-32 32H32c-17.7 0-32-14.3-32-32s14.3-32 32-32H416c17.7 0 32 14.3 32 32z"/></svg></span>
                         </label>
-                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
-                            <i class="fa fa-paint-brush"></i>
+                        <button id="mdbook-theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="mdbook-theme-list">
+                            <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M371.3 367.1c27.3-3.9 51.9-19.4 67.2-42.9L600.2 74.1c12.6-19.5 9.4-45.3-7.6-61.2S549.7-4.4 531.1 9.6L294.4 187.2c-24 18-38.2 46.1-38.4 76.1L371.3 367.1zm-19.6 25.4l-116-104.4C175.9 290.3 128 339.6 128 400c0 3.9 .2 7.8 .6 11.6c1.8 17.5-10.2 36.4-27.8 36.4H96c-17.7 0-32 14.3-32 32s14.3 32 32 32H240c61.9 0 112-50.1 112-112c0-2.5-.1-5-.2-7.5z"/></svg></span>
                         </button>
-                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
-                            <li role="none"><button role="menuitem" class="theme" id="default_theme">Auto</button></li>
-                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
-                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
-                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
-                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
-                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        <ul id="mdbook-theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-default_theme">Auto</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-ayu">Ayu</button></li>
                         </ul>
-                        <button id="search-toggle" class="icon-button" type="button" title="Search (`/`)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="/ s" aria-controls="searchbar">
-                            <i class="fa fa-search"></i>
+                        <button id="mdbook-search-toggle" class="icon-button" type="button" title="Search (`/`)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="/ s" aria-controls="mdbook-searchbar">
+                            <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M416 208c0 45.9-14.9 88.3-40 122.7L502.6 457.4c12.5 12.5 12.5 32.8 0 45.3s-32.8 12.5-45.3 0L330.7 376c-34.4 25.2-76.8 40-122.7 40C93.1 416 0 322.9 0 208S93.1 0 208 0S416 93.1 416 208zM208 352c79.5 0 144-64.5 144-144s-64.5-144-144-144S64 128.5 64 208s64.5 144 144 144z"/></svg></span>
                         </button>
                     </div>
 
@@ -139,33 +142,38 @@
 
                     <div class="right-buttons">
                         <a href="print.html" title="Print this book" aria-label="Print this book">
-                            <i id="print-button" class="fa fa-print"></i>
+                            <span class=fa-svg id="print-button"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M128 0C92.7 0 64 28.7 64 64v96h64V64H354.7L384 93.3V160h64V93.3c0-17-6.7-33.3-18.7-45.3L400 18.7C388 6.7 371.7 0 354.7 0H128zM384 352v32 64H128V384 368 352H384zm64 32h32c17.7 0 32-14.3 32-32V256c0-35.3-28.7-64-64-64H64c-35.3 0-64 28.7-64 64v96c0 17.7 14.3 32 32 32H64v64c0 35.3 28.7 64 64 64H384c35.3 0 64-28.7 64-64V384zm-16-88c-13.3 0-24-10.7-24-24s10.7-24 24-24s24 10.7 24 24s-10.7 24-24 24z"/></svg></span>
                         </a>
 
                     </div>
                 </div>
 
-                <div id="search-wrapper" class="hidden">
-                    <form id="searchbar-outer" class="searchbar-outer">
-                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                <div id="mdbook-search-wrapper" class="hidden">
+                    <form id="mdbook-searchbar-outer" class="searchbar-outer">
+                        <div class="search-wrapper">
+                            <input type="search" id="mdbook-searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="mdbook-searchresults-outer" aria-describedby="searchresults-header">
+                            <div class="spinner-wrapper">
+                                <span class=fa-svg id="fa-spin"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M304 48c0-26.5-21.5-48-48-48s-48 21.5-48 48s21.5 48 48 48s48-21.5 48-48zm0 416c0-26.5-21.5-48-48-48s-48 21.5-48 48s21.5 48 48 48s48-21.5 48-48zM48 304c26.5 0 48-21.5 48-48s-21.5-48-48-48s-48 21.5-48 48s21.5 48 48 48zm464-48c0-26.5-21.5-48-48-48s-48 21.5-48 48s21.5 48 48 48s48-21.5 48-48zM142.9 437c18.7-18.7 18.7-49.1 0-67.9s-49.1-18.7-67.9 0s-18.7 49.1 0 67.9s49.1 18.7 67.9 0zm0-294.2c18.7-18.7 18.7-49.1 0-67.9S93.7 56.2 75 75s-18.7 49.1 0 67.9s49.1 18.7 67.9 0zM369.1 437c18.7 18.7 49.1 18.7 67.9 0s18.7-49.1 0-67.9s-49.1-18.7-67.9 0s-18.7 49.1 0 67.9z"/></svg></span>
+                            </div>
+                        </div>
                     </form>
-                    <div id="searchresults-outer" class="searchresults-outer hidden">
-                        <div id="searchresults-header" class="searchresults-header"></div>
-                        <ul id="searchresults">
+                    <div id="mdbook-searchresults-outer" class="searchresults-outer hidden">
+                        <div id="mdbook-searchresults-header" class="searchresults-header"></div>
+                        <ul id="mdbook-searchresults">
                         </ul>
                     </div>
                 </div>
 
                 <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
                 <script>
-                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
-                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
-                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                    document.getElementById('mdbook-sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('mdbook-sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#mdbook-sidebar a')).forEach(function(link) {
                         link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
                     });
                 </script>
 
-                <div id="content" class="content">
+                <div id="mdbook-content" class="content">
                     <main>
                         <h1 id="installation"><a class="header" href="#installation">Installation</a></h1>
 <p>RustSFQ is provided as a Rust library crate. To use it, you must first install Rust and its package manager, Cargo.</p>
@@ -191,14 +199,14 @@ rust_sfq = "0.1"  # Replace with the actual version
 <li>Code navigation and autocompletion</li>
 </ul>
 <p>These features significantly improve development productivity and code quality within the editor.</p>
-<div style="break-before: page; page-break-before: always;"></div><h1 id="getting-started-with-rustsfq"><a class="header" href="#getting-started-with-rustsfq">Getting Started with RustSFQ</a></h1>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="getting-started-with-rustsfq"><a class="header" href="#getting-started-with-rustsfq">Getting Started with RustSFQ</a></h1>
 <p>This section walks you through a simple example that demonstrates the basic syntax and core functionality of the <strong>RustSFQ</strong> library.</p>
 <p>We’ll build a half-adder circuit and export it as a SPICE netlist.</p>
-<hr />
+<hr>
 <h2 id="example-half-adder-in-rustsfq"><a class="header" href="#example-half-adder-in-rustsfq">Example: Half Adder in RustSFQ</a></h2>
-<p>The following Rust program defines a half-adder circuit and generates a corresponding SPICE-format netlist.<br />
-We’ll review each part step-by-step below.</p>
-<pre><pre class="playground"><code class="language-rust">use rust_sfq::*;
+<p>The following Rust program defines a half-adder circuit and generates a corresponding SPICE-format netlist.<br>We’ll review each part step-by-step below.</p>
+<pre class="playground"><code class="language-rust">use rust_sfq::*;
 
 fn half_adder() -&gt; Circuit&lt;3, 0, 2, 0&gt; {
     let (mut circuit, [a, b, clk], [], [c_out, s_out], []) =
@@ -221,22 +229,23 @@ fn half_adder() -&gt; Circuit&lt;3, 0, 2, 0&gt; {
 fn main() {
     let ha = half_adder();
     println!("{}", RsfqlibSpice::generate(&amp;ha));
-}</code></pre></pre>
+}</code></pre>
 <div align="center">
-  <img src="./figures/half_adder.svg" alt="Half Adder Schematic" />
+  <img src="figures/half_adder.svg" alt="Half Adder Schematic" />
 </div>
+
 <h2 id="project-setup-and-import"><a class="header" href="#project-setup-and-import">Project Setup and Import</a></h2>
-<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
 </span><span class="boring">fn main() {
 </span>use rust_sfq::*;
-<span class="boring">}</span></code></pre></pre>
+<span class="boring">}</span></code></pre>
 <p>Start by importing all items from the <code>rust_sfq</code> crate. This gives you access to the main types like <code>Circuit</code>, <code>Wire</code>, and backend generators such as <code>RsfqlibSpice</code>.</p>
 <h2 id="creating-a-new-circuit"><a class="header" href="#creating-a-new-circuit">Creating a New Circuit</a></h2>
-<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
 </span><span class="boring">fn main() {
 </span>let (mut circuit, [a, b, clk], [], [c_out, s_out], []) =
     Circuit::create(["a", "b", "clk"], [], ["c", "s"], [], "HalfAdder");
-<span class="boring">}</span></code></pre></pre>
+<span class="boring">}</span></code></pre>
 <p>This call to <code>Circuit::create()</code> initializes a new circuit with:</p>
 <ul>
 <li><strong>Inputs</strong>: <code>a</code>, <code>b</code>, <code>clk</code></li>
@@ -251,56 +260,51 @@ fn main() {
 <li><code>CounterWire</code> objects for outputs</li>
 </ul>
 <h2 id="splitting-wires-for-fan-out"><a class="header" href="#splitting-wires-for-fan-out">Splitting Wires for Fan-Out</a></h2>
-<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
 </span><span class="boring">fn main() {
 </span>let (a1, a2) = circuit.split(a);
 let (b1, b2) = circuit.split(b);
 let (clk1, clk2) = circuit.split(clk);
-<span class="boring">}</span></code></pre></pre>
+<span class="boring">}</span></code></pre>
 <p><code>Circuit</code> object has <code>split()</code> function, which takes one <code>Wire</code> object and returns two <code>Wire</code> objects.</p>
 <p>By calling this function, a SPLIT gate is added to the circuit.</p>
 <h2 id="labeling-wires"><a class="header" href="#labeling-wires">Labeling Wires</a></h2>
-<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
 </span><span class="boring">fn main() {
 </span>circuit.label(&amp;clk1, "clk_1");
-<span class="boring">}</span></code></pre></pre>
-<p>You can manually assign a label to any wire, which will appear in the generated netlist.<br />
-If you don’t provide a label, a unique name will be automatically assigned.</p>
+<span class="boring">}</span></code></pre>
+<p>You can manually assign a label to any wire, which will appear in the generated netlist.<br>If you don’t provide a label, a unique name will be automatically assigned.</p>
 <h2 id="creating-gates"><a class="header" href="#creating-gates">Creating Gates</a></h2>
-<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
 </span><span class="boring">fn main() {
 </span>let c = circuit.and(a1, b1, clk1);
 let s = circuit.xor_labeled(a2, b2, clk2, "s");
-<span class="boring">}</span></code></pre></pre>
-<p>Logic gates such as <code>AND</code> and <code>XOR</code> are created by calling methods on the <code>Circuit</code> object.<br />
-In this example:</p>
+<span class="boring">}</span></code></pre>
+<p>Logic gates such as <code>AND</code> and <code>XOR</code> are created by calling methods on the <code>Circuit</code> object.<br>In this example:</p>
 <ul>
 <li><code>and()</code> creates a carry gate</li>
 <li><code>xor_labeled()</code> creates a sum gate with a labeled output wire <code>"s"</code></li>
 </ul>
 <p><code>xor_labeled()</code> is a convenience wrapper for <code>xor()</code> followed by <code>label()</code>.</p>
 <h2 id="connecting-to-circuit-outputs"><a class="header" href="#connecting-to-circuit-outputs">Connecting to Circuit Outputs</a></h2>
-<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
 </span><span class="boring">fn main() {
 </span>circuit.unify(c, c_out);
 circuit.unify(s, s_out);
-<span class="boring">}</span></code></pre></pre>
+<span class="boring">}</span></code></pre>
 <p>To complete the circuit, connect each gate’s output to the corresponding circuit output using <code>unify()</code>.</p>
 <h2 id="exporting-the-circuit"><a class="header" href="#exporting-the-circuit">Exporting the Circuit</a></h2>
-<pre><pre class="playground"><code class="language-rust">fn half_adder() -&gt; Circuit&lt;3, 0, 2, 0&gt; {
+<pre class="playground"><code class="language-rust">fn half_adder() -&gt; Circuit&lt;3, 0, 2, 0&gt; {
     ...
     return circuit;
 }
 fn main() {
     let ha = half_adder();
     println!("{}", RsfqlibSpice::generate(&amp;ha));
-}</code></pre></pre>
-<p>The <code>half_adder()</code> function returns a fully constructed <code>Circuit</code> object.<br />
-This object is parameterized by the number of inputs, counter inputs, outputs, and counter outputs:<br />
-<code>Circuit&lt;3, 0, 2, 0&gt;</code>.</p>
-<p>The <code>RsfqlibSpice::generate()</code> function converts the circuit into a SPICE-format netlist based on the RSFQlib.<br />
-You can use a different backend (e.g. <code>RsfqlibVerilog</code>) to export in other formats.</p>
-<hr />
+}</code></pre>
+<p>The <code>half_adder()</code> function returns a fully constructed <code>Circuit</code> object.<br>This object is parameterized by the number of inputs, counter inputs, outputs, and counter outputs:<br><code>Circuit&lt;3, 0, 2, 0&gt;</code>.</p>
+<p>The <code>RsfqlibSpice::generate()</code> function converts the circuit into a SPICE-format netlist based on the RSFQlib.<br>You can use a different backend (e.g. <code>RsfqlibVerilog</code>) to export in other formats.</p>
+<hr>
 <h2 id="running-the-program"><a class="header" href="#running-the-program">Running the Program</a></h2>
 <p>You can generate the SPICE netlist by compiling and running the program:</p>
 <pre><code class="language-sh">cargo run
@@ -321,7 +325,7 @@ XXOR5 _XSPLIT1_q2 _XSPLIT2_q2 _XSPLIT3_q2 s THmitll_XOR
 <li>Wires starting with an underscore (e.g., <code>_XSPLIT1_q1</code>) are automatically generated</li>
 <li>Labels like <code>clk_1</code> and <code>s</code> appear as specified in the code</li>
 </ul>
-<hr />
+<hr>
 <h2 id="summary"><a class="header" href="#summary">Summary</a></h2>
 <p>In this example, you learned how to:</p>
 <ul>
@@ -330,26 +334,27 @@ XXOR5 _XSPLIT1_q2 _XSPLIT2_q2 _XSPLIT3_q2 s THmitll_XOR
 <li>Connect gate outputs to declared circuit outputs</li>
 <li>Export the circuit as a netlist</li>
 </ul>
-<div style="break-before: page; page-break-before: always;"></div><h1 id="circuit"><a class="header" href="#circuit">Circuit</a></h1>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="circuit"><a class="header" href="#circuit">Circuit</a></h1>
 <h2 id="overview"><a class="header" href="#overview">Overview</a></h2>
 <p>The <code>Circuit</code> struct corresponds to a subcircuit in SPICE and serves as the main object for constructing SFQ circuits in RustSFQ.</p>
 <p>The <code>Circuit</code> instance holds all the necessary information to generate a netlist.</p>
-<p>By passing a reference to a backend's <code>generate()</code> function, you can convert the circuit into a string in formats such as SPICE or Verilog, depending on the backend.</p>
-<hr />
+<p>By passing a reference to a backend’s <code>generate()</code> function, you can convert the circuit into a string in formats such as SPICE or Verilog, depending on the backend.</p>
+<hr>
 <h2 id="type-parameter"><a class="header" href="#type-parameter">Type Parameter</a></h2>
 <p>A <code>Circuit</code> is parameterized by four compile-time constants representing the number of I/O channels:</p>
-<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
 </span><span class="boring">fn main() {
 </span>Circuit&lt;NUM_INPUT, NUM_COUNTER_INPUT, NUM_OUTPUT, NUM_COUNTER_OUTPUT&gt;
-<span class="boring">}</span></code></pre></pre>
+<span class="boring">}</span></code></pre>
 <p>Input and output are I/O channels for <code>Wire</code>. These are normal I/O channels.</p>
 <p>Counter input and counter output are I/O chennels for <code>CounterWire</code>.
 Counter input is logical input for <code>CounterWire</code>, but it is physical output in netlist.</p>
-<hr />
+<hr>
 <h2 id="creating-a-circuit-instance"><a class="header" href="#creating-a-circuit-instance">Creating a Circuit Instance</a></h2>
 <p>A new <code>Circuit</code> can be instantiated using the <code>Circuit::create()</code> function.
 This function defines the structure of the circuit by specifying its I/O ports and name.</p>
-<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
 </span><span class="boring">fn main() {
 </span>pub fn create(
     inputs: [&amp;str; N_I],
@@ -358,7 +363,7 @@ This function defines the structure of the circuit by specifying its I/O ports a
     counter_outputs: [&amp;str; N_CO],
     name: &amp;str,
 ) -&gt; (Circuit&lt;N_I, N_CI, N_O, N_CO&gt;, [Wire; N_I], [CounterWire; N_CI], [CounterWire; N_O], [Wire; N_CO])
-<span class="boring">}</span></code></pre></pre>
+<span class="boring">}</span></code></pre>
 <p><strong>Parameters</strong>:</p>
 <ul>
 <li><code>inputs</code>: Array of names for input wires</li>
@@ -378,36 +383,36 @@ This function defines the structure of the circuit by specifying its I/O ports a
 <li>An array of <code>Wire</code> instances for the counter output ports</li>
 </ul>
 <p>The wires for input ports are used to start constructing the circuit while the wires for output ports are used to finish constructing.</p>
-<hr />
+<hr>
 <h2 id="functions"><a class="header" href="#functions">Functions</a></h2>
 <p>To construct a circuit, a <code>Circuit</code> <strong>instance</strong> provides the following functions:</p>
 <h3 id="logic-gates"><a class="header" href="#logic-gates">Logic Gates</a></h3>
 <p>The <code>and()</code> function adds an AND gate to the circuit.
 The <code>and_labeled()</code> is a convenience function that combines <code>and()</code> with <code>label()</code>, allowing you to define the gate and assign a label to its output wire in a single step.</p>
-<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
 </span><span class="boring">fn main() {
 </span>pub fn and(&amp;self, a: Wire, b: Wire, clk: Wire) -&gt; Wire
 pub fn and_labeled(&amp;self, a: Wire, b: Wire, clk: Wire, label: &amp;str) -&gt; Wire
-<span class="boring">}</span></code></pre></pre>
+<span class="boring">}</span></code></pre>
 <p>This function takes ownership of the input wires: <code>a</code>, <code>b</code>, and <code>clk</code>.
 After being passed into the function, these wire values cannot be used again elsewhere in the program.</p>
 <p>The function returns a new <code>Wire</code> that represents the output of the AND gate.</p>
-<hr />
-<p>Other logic and routing gates (OR, XOR, XNOR, NOT, DFF, NDRO, JTL, BUFF, MERGE, and ZERO_ASYNC) are provided as similar functions. While the number of their input wires may differ, all of these functions return a single <code>Wire</code> corresponding to the gate's output.</p>
-<hr />
+<hr>
+<p>Other logic and routing gates (OR, XOR, XNOR, NOT, DFF, NDRO, JTL, BUFF, MERGE, and ZERO_ASYNC) are provided as similar functions. While the number of their input wires may differ, all of these functions return a single <code>Wire</code> corresponding to the gate’s output.</p>
+<hr>
 <h3 id="split"><a class="header" href="#split">SPLIT</a></h3>
 <p>The <code>split()</code> function adds an SPLIT gate to the circuit.</p>
-<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
 </span><span class="boring">fn main() {
 </span>pub fn split(&amp;mut self, a: Wire) -&gt; (Wire, Wire)
 pub fn split_labeled(&amp;mut self, a: Wire, label1: &amp;str, label2: &amp;str) -&gt; (Wire, Wire)
-<span class="boring">}</span></code></pre></pre>
+<span class="boring">}</span></code></pre>
 <p>The function takes one input <code>Wire</code> and returns a tuple of two new <code>Wire</code> instances.</p>
 <p>This is necessary whenever the same signal needs to be used as input to multiple gates, ensuring that each use has its own distinct <code>Wire</code> object.</p>
-<hr />
+<hr>
 <h3 id="gates-for-counterwire"><a class="header" href="#gates-for-counterwire">Gates for CounterWire</a></h3>
 <p>To support circuits employing counter-flow clocking, BUFF and SPLIT are available for <code>CounterWire</code>.</p>
-<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
 </span><span class="boring">fn main() {
 </span>pub fn cbuff(&amp;mut self, q: CounterWire) -&gt; CounterWire
 pub fn cbuff_labeled(&amp;mut self, q: CounterWire, label: &amp;str) -&gt; CounterWire
@@ -415,14 +420,14 @@ pub fn csplit(&amp;mut self, q1: CounterWire) -&gt; (Wire, CounterWire)
 pub fn csplit_labeled(&amp;mut self, q1: CounterWire, label_q2: &amp;str, label_a: &amp;str) -&gt; (Wire, CounterWire) 
 pub fn csplit2(&amp;mut self, q1: CounterWire, q2: CounterWire) -&gt; CounterWire 
 pub fn csplit2_labeled(&amp;mut self, q1: CounterWire, q2: CounterWire, label: &amp;str) -&gt; CounterWire
-<span class="boring">}</span></code></pre></pre>
+<span class="boring">}</span></code></pre>
 <p>The <code>cbuff()</code> function takes a <code>CounterWire</code> representing the <strong>output</strong> of a BUFF gate then returns a new <code>CounterWire</code> representing the <strong>input</strong> of the gate.</p>
 <p>The <code>csplit()</code> function takes <strong>one</strong> <code>CounterWire</code> representing the <strong>one output</strong> of a SPLIT gate then returns a tuple of a new <code>Wire</code> representing <strong>the other output</strong> of the gate and a new <code>CounterWire</code> representing the <strong>input</strong> of the gate.</p>
 <p>The <code>csplit2()</code> function takes two <code>CounterWire</code>s representing the <strong>outputs</strong> of a SPLIT gate then returns a new <code>CounterWire</code> representing the <strong>input</strong> of the gate.</p>
-<hr />
+<hr>
 <h3 id="subcircuits"><a class="header" href="#subcircuits">Subcircuits</a></h3>
 <p>The <code>subcircuit()</code> function allows you to instantiate a reusable subcircuit within a larger circuit.</p>
-<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
 </span><span class="boring">fn main() {
 </span>pub fn subcircuit&lt;const M_I: usize, const M_CI: usize, const M_O: usize, const M_CO: usize&gt;(
     &amp;mut self,
@@ -430,12 +435,12 @@ pub fn csplit2_labeled(&amp;mut self, q1: CounterWire, q2: CounterWire, label: &
     inputs: [Wire; M_I],
     counter_inputs: [CounterWire; M_CI],
 ) -&gt; ([Wire; M_O], [CounterWire; M_CO])
-<span class="boring">}</span></code></pre></pre>
+<span class="boring">}</span></code></pre>
 <p>It takes:</p>
 <ul>
 <li>A <strong>reference</strong> to an existing <code>Circuit</code></li>
-<li>An array of <code>Wire</code>s for the subcircuit's inputs</li>
-<li>An array of <code>CounterWire</code>s for the subcircuit's counter inputs</li>
+<li>An array of <code>Wire</code>s for the subcircuit’s inputs</li>
+<li>An array of <code>CounterWire</code>s for the subcircuit’s counter inputs</li>
 </ul>
 <p>It returns a tuple of:</p>
 <ul>
@@ -444,23 +449,23 @@ pub fn csplit2_labeled(&amp;mut self, q1: CounterWire, q2: CounterWire, label: &
 </ul>
 <p>The input arrays are checked at compile time for correct lengths, ensuring type safety</p>
 <p>The subcircuit is passed by reference, so ownership is preserved and the same subcircuit can be reused multiple times in different contexts</p>
-<hr />
+<hr>
 <h3 id="loops"><a class="header" href="#loops">Loops</a></h3>
 <p>To construct feedback loops, use the <code>gen_loop()</code> function:</p>
-<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
 </span><span class="boring">fn main() {
 </span>pub fn gen_loop(&amp;mut self, label: &amp;str) -&gt; (Wire, CounterWire)
-<span class="boring">}</span></code></pre></pre>
+<span class="boring">}</span></code></pre>
 <p>This returns a pair of <code>Wire</code> and <code>CounterWire</code> representing the same wire.</p>
 <p>By unifying the <code>CounterWire</code> with another <code>Wire</code> later, you can ensure the <code>Wire</code> has a driver.</p>
-<hr />
+<hr>
 <h3 id="unification"><a class="header" href="#unification">Unification</a></h3>
 <p>The <code>unify()</code> function connects a <code>Wire</code> and a <code>CounterWire</code>.</p>
 <p>Since a <code>Wire</code> has a driver and a <code>CounterWire</code> has a receiver, unifying them creates no new wire. Therefore, the function has no return value.</p>
-<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
 </span><span class="boring">fn main() {
 </span>pub fn unify(&amp;mut self, wire: Wire, cwire: CounterWire)
-<span class="boring">}</span></code></pre></pre>
+<span class="boring">}</span></code></pre>
 <p>This is primarily used in two scenarios:</p>
 <ul>
 <li>To connect a wire to an output port of the circuit</li>
@@ -472,23 +477,23 @@ pub fn csplit2_labeled(&amp;mut self, q1: CounterWire, q2: CounterWire, label: &
 <li>If both sides have labels and they match, the label is retained</li>
 <li>If both sides have labels and they differ, the function raises an error</li>
 </ul>
-<hr />
+<hr>
 <h3 id="labeling"><a class="header" href="#labeling">Labeling</a></h3>
 <p>You can assign an explicit label to a wire using the <code>label()</code> function.</p>
 <p>This function is defined generically for both <code>Wire</code> and <code>CounterWire</code>, meaning that <code>T</code> can be either type:</p>
-<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
 </span><span class="boring">fn main() {
 </span>pub fn label&lt;T&gt;(&amp;mut self, wire: &amp;T, label: &amp;str)
-<span class="boring">}</span></code></pre></pre>
+<span class="boring">}</span></code></pre>
 <p>The function takes a <strong>reference</strong> to the wire, <strong>so ownership is not moved</strong>.</p>
 <p>Explicit labels must not begin with an underscore to avoid conflicts with automatically generated labels.</p>
 <p>A wire that already has an explicit label cannot be labeled again.</p>
-<p>RustSFQ does not check for collisions among explicitly assigned labels; it is the user's responsibility to ensure uniqueness.</p>
-<hr />
+<p>RustSFQ does not check for collisions among explicitly assigned labels; it is the user’s responsibility to ensure uniqueness.</p>
+<hr>
 <h2 id="exporting"><a class="header" href="#exporting">Exporting</a></h2>
 <p>By passing a reference of <code>Circuit</code> instance into a backend’s <code>generate()</code> function, you can convert the circuit into a backend-specific string representation.</p>
 <p>The resulting string can be printed to standard output to obtain the final netlist.</p>
-<pre><pre class="playground"><code class="language-rust">use rust_sfq::*;
+<pre class="playground"><code class="language-rust">use rust_sfq::*;
 
 fn half_adder() -&gt; Circuit&lt;3, 0, 2, 0&gt; { ... }
 fn full_adder(ha: &amp;Circuit&lt;3, 0, 2, 0&gt;) -&gt; Circuit&lt;4, 0, 2, 0&gt; { ... }
@@ -500,18 +505,18 @@ fn main() {
     type Backend = RsfqlibSpice;
     println!("{}", Backend::generate(&amp;half_adder));
     println!("{}", Backend::generate(&amp;full_adder));
-}</code></pre></pre>
-<div style="break-before: page; page-break-before: always;"></div><h1 id="wire-and-counterwire"><a class="header" href="#wire-and-counterwire">Wire and CounterWire</a></h1>
+}</code></pre>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="wire-and-counterwire"><a class="header" href="#wire-and-counterwire">Wire and CounterWire</a></h1>
 <h2 id="overview-1"><a class="header" href="#overview-1">Overview</a></h2>
 <p><code>Wire</code> and <code>CounterWire</code> represent electrical nets in a netlist and are used to describe the connections between gates within a circuit.</p>
-<p>A <code>Wire</code> appears when constructing a circuit in a forward direction. It represents a net that has <strong>already been driven</strong>, but has <strong>not yet been received</strong>.<br />
-A <code>CounterWire</code> is used when constructing circuits in a counter-flow manner, such as in counter-flow clocking. It represents a net that has <strong>already been received</strong>, but has <strong>not yet been driven</strong>.</p>
-<p>These objects are governed by Rust's ownership system, which ensures that each wire has exactly <strong>one driver and one receiver</strong>.</p>
+<p>A <code>Wire</code> appears when constructing a circuit in a forward direction. It represents a net that has <strong>already been driven</strong>, but has <strong>not yet been received</strong>.<br>A <code>CounterWire</code> is used when constructing circuits in a counter-flow manner, such as in counter-flow clocking. It represents a net that has <strong>already been received</strong>, but has <strong>not yet been driven</strong>.</p>
+<p>These objects are governed by Rust’s ownership system, which ensures that each wire has exactly <strong>one driver and one receiver</strong>.</p>
 <h2 id="generating-wires"><a class="header" href="#generating-wires">Generating Wires</a></h2>
 <p>Although <code>Wire</code> and <code>CounterWire</code> are structs, their constructors are private. Users <strong>cannot instantiate them freely</strong>.</p>
 <p>They can only be obtained in the following ways:</p>
 <ul>
-<li>As circuit's inputs or outputs when calling <code>Circuit::create()</code></li>
+<li>As circuit’s inputs or outputs when calling <code>Circuit::create()</code></li>
 <li>As outputs from gate functions such as <code>and()</code>, <code>xor()</code>, etc.</li>
 <li>From loop construction using <code>gen_loop()</code></li>
 </ul>
@@ -523,24 +528,24 @@ A <code>CounterWire</code> is used when constructing circuits in a counter-flow 
 <li><strong>Labeling</strong>: If you want to assign a label to a wire, pass a reference to <code>label()</code> like <code>circuit.label(&amp;a)</code>.</li>
 <li><strong>Unification</strong>: When connecting a <code>Wire</code> and a <code>CounterWire</code>, you pass them to <code>unify()</code> like <code>circuit.unify(a, b)</code>. The <code>Wire</code> and <code>CounterWire</code> is consumed (ownership is moved).</li>
 </ul>
-<p>The reason <code>Circuit::create()</code> returns <strong><code>CounterWire</code>s for outputs</strong> is because those nets are "to be driven." You use <code>unify()</code> to connect a <code>Wire</code> (already driven) to these <code>CounterWire</code>s to complete the connection.</p>
+<p>The reason <code>Circuit::create()</code> returns <strong><code>CounterWire</code>s for outputs</strong> is because those nets are “to be driven.” You use <code>unify()</code> to connect a <code>Wire</code> (already driven) to these <code>CounterWire</code>s to complete the connection.</p>
 <h2 id="prevention-of-multiple-use"><a class="header" href="#prevention-of-multiple-use">Prevention of Multiple Use</a></h2>
 <p>In SFQ circuits, multiple receivers (fanout) from a single wire is prohibited. This restriction is <strong>enforced statically</strong> via Rust’s ownership system.</p>
 <p>When you use a <code>Wire</code> as an input to a gate function, ownership is moved.</p>
 <p>You cannot pass the same <code>Wire</code> to another gate function afterward, preventing accidental multi-use.</p>
-<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
 </span><span class="boring">fn main() {
 </span>let (mut circuit, [a, clk], [], [], []) =
     Circuit::create(["a", "clk"], [], [], [], "invalid");
 
 let c = circuit.dff(a, clk);
 let d = circuit.not(a, clk);    // use of moved value. failed to compile
-<span class="boring">}</span></code></pre></pre>
+<span class="boring">}</span></code></pre>
 <h2 id="prevention-of-unused-wires"><a class="header" href="#prevention-of-unused-wires">Prevention of Unused Wires</a></h2>
 <p>Rust’s ownership system guarantees that a <code>Wire</code> is used <strong>at most once</strong>, but <strong>not necessarily at least once</strong>.</p>
 <p>In most cases, an unused <code>Wire</code> will be caught by the Rust compiler as an unused variable.
 However, it is possible to bypass this warning like this:</p>
-<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
 </span><span class="boring">fn main() {
 </span>let (mut circuit, [a, b, c], [], [], []) =
     Circuit::create(["a", "b", "c"], [], [], [], "invalid");
@@ -553,7 +558,7 @@ circuit.jtl(b);
 
 // irrelevant use
 println!("{:?}", c.type_id());
-<span class="boring">}</span></code></pre></pre>
+<span class="boring">}</span></code></pre>
 <p>To catch such silent mistakes, RustSFQ performs <strong>runtime validation</strong>:</p>
 <ul>
 <li>Each <code>Wire</code> internally tracks a private counter for receivers.</li>
@@ -561,9 +566,15 @@ println!("{:?}", c.type_id());
 <li>If not, a runtime error is reported.</li>
 </ul>
 <p>This mechanism ensures correctness even in subtle or intentionally suppressed cases.</p>
-<div style="break-before: page; page-break-before: always;"></div><h1 id="available-gates-and-backends"><a class="header" href="#available-gates-and-backends">Available Gates and Backends</a></h1>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="available-gates-and-backends"><a class="header" href="#available-gates-and-backends">Available Gates and Backends</a></h1>
 <h2 id="compatibility-table-as-of-version-012"><a class="header" href="#compatibility-table-as-of-version-012">Compatibility table (as of version 0.1.2)</a></h2>
-<div class="table-wrapper"><table><thead><tr><th>Gate</th><th style="text-align: center">RsfqlibSpice</th><th style="text-align: center">RsfqlibVerilog</th></tr></thead><tbody>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Gate</th><th style="text-align: center">RsfqlibSpice</th><th style="text-align: center">RsfqlibVerilog</th></tr>
+</thead>
+<tbody>
 <tr><td>JTL</td><td style="text-align: center">✅</td><td style="text-align: center">✅</td></tr>
 <tr><td>SPLIT</td><td style="text-align: center">✅</td><td style="text-align: center">✅</td></tr>
 <tr><td>MERGE</td><td style="text-align: center">✅</td><td style="text-align: center">✅</td></tr>
@@ -576,16 +587,18 @@ println!("{:?}", c.type_id());
 <tr><td>NDRO</td><td style="text-align: center">✅</td><td style="text-align: center">✅</td></tr>
 <tr><td>BUFF</td><td style="text-align: center">✅</td><td style="text-align: center">✅</td></tr>
 <tr><td>ZERO_ASYNC</td><td style="text-align: center">✅</td><td style="text-align: center">✅</td></tr>
-</tbody></table>
+<tr><td>TERMINATE</td><td style="text-align: center">✅</td><td style="text-align: center">✅</td></tr>
+</tbody>
+</table>
 </div>
 <h2 id="backends"><a class="header" href="#backends">Backends</a></h2>
 <ul>
 <li>RSFQlib (<a href="https://github.com/sunmagnetics/RSFQlib">https://github.com/sunmagnetics/RSFQlib</a>)</li>
 </ul>
-<div style="break-before: page; page-break-before: always;"></div><h1 id="for-rust-beginners"><a class="header" href="#for-rust-beginners">For Rust Beginners</a></h1>
-<p>This page is intended for readers who have <strong>never used Rust before</strong>.<br />
-It explains the <strong>minimum Rust knowledge required to use RustSFQ</strong>, including basic syntax, data types, ownership, and how to run your first Rust program.</p>
-<hr />
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="for-rust-beginners"><a class="header" href="#for-rust-beginners">For Rust Beginners</a></h1>
+<p>This page is intended for readers who have <strong>never used Rust before</strong>.<br>It explains the <strong>minimum Rust knowledge required to use RustSFQ</strong>, including basic syntax, data types, ownership, and how to run your first Rust program.</p>
+<hr>
 <h1 id="hello-world"><a class="header" href="#hello-world">Hello World</a></h1>
 <h2 id="creating-a-project"><a class="header" href="#creating-a-project">Creating a Project</a></h2>
 <p>To create a new project using Cargo (Rust’s build system and package manager), use the following command:</p>
@@ -595,9 +608,9 @@ It explains the <strong>minimum Rust knowledge required to use RustSFQ</strong>,
 <h2 id="the-main-function"><a class="header" href="#the-main-function">The <code>main</code> Function</a></h2>
 <p>In Rust, the execution of any program begins at the <code>main</code> function. This is the <strong>entry point</strong> of the program.</p>
 <p>Here is the simplest possible Rust program:</p>
-<pre><pre class="playground"><code class="language-rust">fn main() {
+<pre class="playground"><code class="language-rust">fn main() {
     println!("Hello, World!");
-}</code></pre></pre>
+}</code></pre>
 <h2 id="running-a-project"><a class="header" href="#running-a-project">Running a Project</a></h2>
 <p>Navigate into the project directory and run it:</p>
 <pre><code class="language-bash">cd hello_rust
@@ -609,27 +622,27 @@ cargo run
 <h2 id="the-print-macro"><a class="header" href="#the-print-macro">The <code>print!</code> Macro</a></h2>
 <p>Rust uses <strong>macros</strong> for certain language features, and printing to the console is done using the <code>print!</code> macro (note the exclamation mark <code>!</code>).</p>
 <p><code>println!</code> macro prints text with a newline.</p>
-<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
 </span><span class="boring">fn main() {
 </span>print!("Hello");
 println!(", World!");
-<span class="boring">}</span></code></pre></pre>
+<span class="boring">}</span></code></pre>
 <p>output:</p>
 <pre><code class="language-text">Hello, World!
 </code></pre>
 <p>You can also print variables by using <code>{}</code> inside the string:</p>
-<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
 </span><span class="boring">fn main() {
 </span>let name = "Alice";
 println!("Hello, {}!", name); // Hello, Alice!
 let x = 1;
 let y = 2;
 println!("{} + {} = {}", x, y, x + y);  // 1 + 2 = 3
-<span class="boring">}</span></code></pre></pre>
-<hr />
+<span class="boring">}</span></code></pre>
+<hr>
 <h1 id="variables-and-types-in-rust"><a class="header" href="#variables-and-types-in-rust">Variables and Types in Rust</a></h1>
 <p>In Rust, variables are declared using the <code>let</code> keyword. By default, variables are <strong>immutable</strong>, but you can make them mutable by adding <code>mut</code>.</p>
-<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
 </span><span class="boring">fn main() {
 </span>let x = 5;
 println!("x = {}", x);  // x = 5
@@ -638,15 +651,15 @@ println!("x = {}", x);  // x = 5
 let mut y = 10;
 y = 20; // Allowed: `y` is mutable
 println!("y = {}", y);  // y = 20
-<span class="boring">}</span></code></pre></pre>
+<span class="boring">}</span></code></pre>
 <h2 id="shadowing-re-declaring-a-variable"><a class="header" href="#shadowing-re-declaring-a-variable">Shadowing (Re-declaring a Variable)</a></h2>
 <p>Rust allows you to re-declare a variable using <code>let</code> again. This is called <strong>shadowing</strong> and can be used to change the value.</p>
-<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
 </span><span class="boring">fn main() {
 </span>let z = 100;
 let z = z + 1;
 println!("z = {}", z);  // z = 101
-<span class="boring">}</span></code></pre></pre>
+<span class="boring">}</span></code></pre>
 <h2 id="integers"><a class="header" href="#integers">Integers</a></h2>
 <p>Rust has both signed and unsigned integer types with an explicit size, such as:</p>
 <ul>
@@ -659,27 +672,27 @@ println!("z = {}", z);  // z = 101
 <li><code>usize</code> = unsigned integer the size of a pointer</li>
 </ul>
 <p>By default:</p>
-<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
 </span><span class="boring">fn main() {
 </span>let a = 10;      // inferred as i32
 let b = 20u64;   // explicitly u64
 let c: i16 = -5; // type annotation
-<span class="boring">}</span></code></pre></pre>
+<span class="boring">}</span></code></pre>
 <h2 id="type-annotations"><a class="header" href="#type-annotations">Type Annotations</a></h2>
 <p>While Rust often infers types automatically, you can specify them explicitly when needed:</p>
-<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
 </span><span class="boring">fn main() {
 </span>let x: u32 = 123;
 let y: f64 = 3.1415;
 let flag: bool = true;
-<span class="boring">}</span></code></pre></pre>
+<span class="boring">}</span></code></pre>
 <h2 id="string-types"><a class="header" href="#string-types">String Types</a></h2>
 <p>Rust has two kinds of strings:</p>
 <ol>
 <li>String slices (<code>&amp;str</code>): used for fixed string data</li>
 <li><code>String</code>: a growable heap-allocated string</li>
 </ol>
-<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
 </span><span class="boring">fn main() {
 </span>let name: &amp;str = "Alice";
 println!("{}", name);   // Alice
@@ -687,13 +700,13 @@ println!("{}", name);   // Alice
 let mut greeting = String::from("Hello");
 greeting.push_str(", World!");
 println!("{}", greeting);   // Hello, World!
-<span class="boring">}</span></code></pre></pre>
+<span class="boring">}</span></code></pre>
 <h3 id="converting-string-to-str"><a class="header" href="#converting-string-to-str">Converting <code>String</code> to <code>&amp;str</code></a></h3>
 <ol>
 <li>Using <code>.as_str()</code></li>
 <li>Using <code>&amp;</code> for implicit conversion</li>
 </ol>
-<pre><pre class="playground"><code class="language-rust">fn print_str(s: &amp;str) {
+<pre class="playground"><code class="language-rust">fn print_str(s: &amp;str) {
     println!("{}", s);
 }
 
@@ -703,14 +716,12 @@ fn main() {
     print_str(s.as_str());  // OK. explicit conversion
     print_str(&amp;s);          // OK. implicit conversion from &amp;String to &amp;str
     print_str(s);           // NG. Cannot implicitly convert from String to &amp;str
-}</code></pre></pre>
-<hr />
+}</code></pre>
+<hr>
 <h1 id="functions-1"><a class="header" href="#functions-1">Functions</a></h1>
-<p>In Rust, functions are defined using the <code>fn</code> keyword. All parameters and return types must be explicitly typed.<br />
-Unlike Python or JavaScript, Rust does not support default parameter values.<br />
-You must explicitly pass all arguments when calling a function.</p>
+<p>In Rust, functions are defined using the <code>fn</code> keyword. All parameters and return types must be explicitly typed.<br>Unlike Python or JavaScript, Rust does not support default parameter values.<br>You must explicitly pass all arguments when calling a function.</p>
 <h2 id="basic-syntax"><a class="header" href="#basic-syntax">Basic Syntax</a></h2>
-<pre><pre class="playground"><code class="language-rust">fn add(a: i32, b: i32) -&gt; i32 {
+<pre class="playground"><code class="language-rust">fn add(a: i32, b: i32) -&gt; i32 {
     a + b
 }
 
@@ -721,7 +732,7 @@ fn square(x: i32) -&gt; i32 {
 fn main() {
     let sum = add(3, 5);
     let sq = square(sum);
-}</code></pre></pre>
+}</code></pre>
 <ul>
 <li>
 <p><code>fn</code> — starts a function definition</p>
@@ -739,33 +750,31 @@ fn main() {
 </ul>
 </li>
 </ul>
-<hr />
+<hr>
 <h1 id="ownership-and-references"><a class="header" href="#ownership-and-references">Ownership and References</a></h1>
 <p>Rust has a unique <strong>ownership system</strong> that ensures memory safety without a garbage collector.</p>
 <h2 id="copy-vs-move"><a class="header" href="#copy-vs-move">Copy vs Move</a></h2>
-<p>Some simple types, like integers, implement the <code>Copy</code> trait.<br />
-This means assigning them creates a copy, and both variables can be used.</p>
-<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+<p>Some simple types, like integers, implement the <code>Copy</code> trait.<br>This means assigning them creates a copy, and both variables can be used.</p>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
 </span><span class="boring">fn main() {
 </span>let a = 5;
 let b = a; // a is copied into b
 
 println!("a = {}, b = {}", a, b); // OK. both are usable
-<span class="boring">}</span></code></pre></pre>
-<p>However, <strong>complex types like <code>String</code> do not implement <code>Copy</code></strong>.<br />
-Instead, assigning them transfers ownership — this is called a <strong>move</strong>.</p>
-<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+<span class="boring">}</span></code></pre>
+<p>However, <strong>complex types like <code>String</code> do not implement <code>Copy</code></strong>.<br>Instead, assigning them transfers ownership — this is called a <strong>move</strong>.</p>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
 </span><span class="boring">fn main() {
 </span>let s1 = String::from("hello");
 let s2 = s1; // ownership moves from s1 to s2
 
 // println!("{}", s1); // Error: s1 was moved
 println!("{}", s2);   // OK
-<span class="boring">}</span></code></pre></pre>
+<span class="boring">}</span></code></pre>
 <p>Once ownership has moved, the original variable (<code>s1</code>) can no longer be used.</p>
 <h2 id="references-borrowing-instead-of-moving"><a class="header" href="#references-borrowing-instead-of-moving">References: Borrowing Instead of Moving</a></h2>
 <p>To use a value <strong>without taking ownership</strong>, you can <strong>borrow</strong> it by using a reference (<code>&amp;</code>).</p>
-<pre><pre class="playground"><code class="language-rust">fn print_message(msg: &amp;String) {
+<pre class="playground"><code class="language-rust">fn print_message(msg: &amp;String) {
     println!("Message: {}", msg);
 }
 
@@ -773,7 +782,7 @@ fn main() {
     let s = String::from("Rust");
     print_message(&amp;s); // pass by reference
     println!("{}", s); // OK. still usable
-}</code></pre></pre>
+}</code></pre>
 <ul>
 <li><code>&amp;s</code> is a immutable reference to <code>s</code></li>
 <li>Ownership is not transferred</li>
@@ -781,7 +790,7 @@ fn main() {
 </ul>
 <h2 id="mutable-references"><a class="header" href="#mutable-references">Mutable References</a></h2>
 <p>If you want to <strong>modify</strong> a value through a reference, use a <strong>mutable reference</strong> (<code>&amp;mut</code>).</p>
-<pre><pre class="playground"><code class="language-rust">fn change(s: &amp;mut String) {
+<pre class="playground"><code class="language-rust">fn change(s: &amp;mut String) {
     s.push_str(", Rust!");
 }
 
@@ -789,7 +798,7 @@ fn main() {
     let mut s = String::from("Hi");
     change(&amp;mut s); // pass by mutable reference
     println!("{}", s); // "Hi, Rust!"
-}</code></pre></pre>
+}</code></pre>
 <h2 id="reference-safety-rules"><a class="header" href="#reference-safety-rules">Reference Safety Rules</a></h2>
 <ul>
 <li><strong>Only one</strong> mutable reference (<code>&amp;mut</code>) is allowed at a time</li>
@@ -797,10 +806,9 @@ fn main() {
 <li><strong>Multiple</strong> immutable references (<code>&amp;</code>) are allowed simultaneously</li>
 </ul>
 <p>These rules are enforced at compile time, ensuring memory safety without the need for runtime checks.</p>
-<hr />
+<hr>
 <h1 id="array-vector-and-tuple"><a class="header" href="#array-vector-and-tuple">Array, Vector, and Tuple</a></h1>
-<p>Rust provides multiple ways to store collections of values.<br />
-Here are the most common types: <strong>array</strong>, <strong>vector</strong>, and <strong>tuple</strong>.</p>
+<p>Rust provides multiple ways to store collections of values.<br>Here are the most common types: <strong>array</strong>, <strong>vector</strong>, and <strong>tuple</strong>.</p>
 <h2 id="array-t-n"><a class="header" href="#array-t-n">Array <code>[T; N]</code></a></h2>
 <ul>
 <li>Fixed-size, stack-allocated collection of elements of the same type.</li>
@@ -808,46 +816,46 @@ Here are the most common types: <strong>array</strong>, <strong>vector</strong>,
 <li>You cannot resize an array after creation.</li>
 <li>Arrays can also be unpacked (destructured) just like tuples.</li>
 </ul>
-<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
 </span><span class="boring">fn main() {
 </span>let arr: [i32; 3] = [10, 20, 30];
 println!("{}", arr[0]); // 10
 
 let [x, y, z] = arr;
 println!("x = {}, y = {}, z = {}", x, y, z); // x = 10, y = 20, z = 30
-<span class="boring">}</span></code></pre></pre>
+<span class="boring">}</span></code></pre>
 <h2 id="vector-vect"><a class="header" href="#vector-vect">Vector <code>Vec&lt;T&gt;</code></a></h2>
 <ul>
 <li>Growable, heap-allocated list of elements.</li>
 <li>All elements must be the same type.</li>
 <li>You cannot destructure a vector in the same way as an array.</li>
 </ul>
-<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
 </span><span class="boring">fn main() {
 </span>let mut vec: Vec&lt;i32&gt; = Vec::new();
 vec.push(1);
 vec.push(2);
 println!("{:?}", vec); // [1, 2]
-<span class="boring">}</span></code></pre></pre>
+<span class="boring">}</span></code></pre>
 <p>Shortcut initialization with macro:</p>
-<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
 </span><span class="boring">fn main() {
 </span>let v = vec![1, 2, 3];
-<span class="boring">}</span></code></pre></pre>
+<span class="boring">}</span></code></pre>
 <h2 id="tuple-t1-t2-"><a class="header" href="#tuple-t1-t2-">Tuple <code>(T1, T2, ...)</code></a></h2>
 <ul>
 <li>Group values of <strong>different types</strong> together.</li>
 <li>Fixed size and order matters.</li>
 </ul>
-<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
 </span><span class="boring">fn main() {
 </span>let tup: (i32, bool, &amp;str) = (42, true, "hello");
 let (a, b, c) = tup; // destructuring
 
 println!("First: {}", tup.0); // 42
-<span class="boring">}</span></code></pre></pre>
+<span class="boring">}</span></code></pre>
 <p>Tuples are especially useful for returning multiple values from a function.</p>
-<hr />
+<hr>
 <h1 id="using-modules"><a class="header" href="#using-modules">Using Modules</a></h1>
 <p>Rust uses a modular system to organize code. When working with external crates (libraries) or internal modules, you use the <code>use</code> keyword to bring items into scope.</p>
 <h2 id="external-libraries"><a class="header" href="#external-libraries">External Libraries</a></h2>
@@ -861,10 +869,10 @@ rust_sfq = "0.1"
 </li>
 <li>
 <p>Then import items from the crate in your code:</p>
-<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
 </span><span class="boring">fn main() {
 </span>use rust_sfq::*;
-<span class="boring">}</span></code></pre></pre>
+<span class="boring">}</span></code></pre>
 </li>
 </ol>
 <p>Rust will download the crate from <a href="https://crates.io">crates.io</a> the first time you build the project.</p>
@@ -875,10 +883,10 @@ rust_sfq = "0.1"
 <li>Backend modules like <code>RsfqlibSpice</code> or <code>RsfqlibVerilog</code></li>
 </ul>
 <p>If you prefer more explicit imports:</p>
-<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
 </span><span class="boring">fn main() {
 </span>use rust_sfq::{Circuit, RsfqlibSpice};
-<span class="boring">}</span></code></pre></pre>
+<span class="boring">}</span></code></pre>
 
                     </main>
 
@@ -897,6 +905,11 @@ rust_sfq = "0.1"
 
         </div>
 
+        <template id=fa-eye><span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M288 32c-80.8 0-145.5 36.8-192.6 80.6C48.6 156 17.3 208 2.5 243.7c-3.3 7.9-3.3 16.7 0 24.6C17.3 304 48.6 356 95.4 399.4C142.5 443.2 207.2 480 288 480s145.5-36.8 192.6-80.6c46.8-43.5 78.1-95.4 93-131.1c3.3-7.9 3.3-16.7 0-24.6c-14.9-35.7-46.2-87.7-93-131.1C433.5 68.8 368.8 32 288 32zM432 256c0 79.5-64.5 144-144 144s-144-64.5-144-144s64.5-144 144-144s144 64.5 144 144zM288 192c0 35.3-28.7 64-64 64c-11.5 0-22.3-3-31.6-8.4c-.2 2.8-.4 5.5-.4 8.4c0 53 43 96 96 96s96-43 96-96s-43-96-96-96c-2.8 0-5.6 .1-8.4 .4c5.3 9.3 8.4 20.1 8.4 31.6z"/></svg></span></template>
+        <template id=fa-eye-slash><span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M38.8 5.1C28.4-3.1 13.3-1.2 5.1 9.2S-1.2 34.7 9.2 42.9l592 464c10.4 8.2 25.5 6.3 33.7-4.1s6.3-25.5-4.1-33.7L525.6 386.7c39.6-40.6 66.4-86.1 79.9-118.4c3.3-7.9 3.3-16.7 0-24.6c-14.9-35.7-46.2-87.7-93-131.1C465.5 68.8 400.8 32 320 32c-68.2 0-125 26.3-169.3 60.8L38.8 5.1zM223.1 149.5C248.6 126.2 282.7 112 320 112c79.5 0 144 64.5 144 144c0 24.9-6.3 48.3-17.4 68.7L408 294.5c5.2-11.8 8-24.8 8-38.5c0-53-43-96-96-96c-2.8 0-5.6 .1-8.4 .4c5.3 9.3 8.4 20.1 8.4 31.6c0 10.2-2.4 19.8-6.6 28.3l-90.3-70.8zm223.1 298L373 389.9c-16.4 6.5-34.3 10.1-53 10.1c-79.5 0-144-64.5-144-144c0-6.9 .5-13.6 1.4-20.2L83.1 161.5C60.3 191.2 44 220.8 34.5 243.7c-3.3 7.9-3.3 16.7 0 24.6c14.9 35.7 46.2 87.7 93 131.1C174.5 443.2 239.2 480 320 480c47.8 0 89.9-12.9 126.2-32.5z"/></svg></span></template>
+        <template id=fa-copy><span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M502.6 70.63l-61.25-61.25C435.4 3.371 427.2 0 418.7 0H255.1c-35.35 0-64 28.66-64 64l.0195 256C192 355.4 220.7 384 256 384h192c35.2 0 64-28.8 64-64V93.25C512 84.77 508.6 76.63 502.6 70.63zM464 320c0 8.836-7.164 16-16 16H255.1c-8.838 0-16-7.164-16-16L239.1 64.13c0-8.836 7.164-16 16-16h128L384 96c0 17.67 14.33 32 32 32h47.1V320zM272 448c0 8.836-7.164 16-16 16H63.1c-8.838 0-16-7.164-16-16L47.98 192.1c0-8.836 7.164-16 16-16H160V128H63.99c-35.35 0-64 28.65-64 64l.0098 256C.002 483.3 28.66 512 64 512h192c35.2 0 64-28.8 64-64v-32h-47.1L272 448z"/></svg></span></template>
+        <template id=fa-play><span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M73 39c-14.8-9.1-33.4-9.4-48.5-.9S0 62.6 0 80V432c0 17.4 9.4 33.4 24.5 41.9s33.7 8.1 48.5-.9L361 297c14.3-8.7 23-24.2 23-41s-8.7-32.2-23-41L73 39z"/></svg></span></template>
+        <template id=fa-clock-rotate-left><span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M75 75L41 41C25.9 25.9 0 36.6 0 57.9V168c0 13.3 10.7 24 24 24H134.1c21.4 0 32.1-25.9 17-41l-30.8-30.8C155 85.5 203 64 256 64c106 0 192 86 192 192s-86 192-192 192c-40.8 0-78.6-12.7-109.7-34.4c-14.5-10.1-34.4-6.6-44.6 7.9s-6.6 34.4 7.9 44.6C151.2 495 201.7 512 256 512c141.4 0 256-114.6 256-256S397.4 0 256 0C185.3 0 121.3 28.7 75 75zm181 53c-13.3 0-24 10.7-24 24V256c0 6.4 2.5 12.5 7 17l72 72c9.4 9.4 24.6 9.4 33.9 0s9.4-24.6 0-33.9l-65-65V152c0-13.3-10.7-24-24-24z"/></svg></span></template>
 
 
 
@@ -905,13 +918,13 @@ rust_sfq = "0.1"
         </script>
 
 
-        <script src="elasticlunr.min.js"></script>
-        <script src="mark.min.js"></script>
-        <script src="searcher.js"></script>
+        <script src="elasticlunr-ef4e11c1.min.js"></script>
+        <script src="mark-09e88c2c.min.js"></script>
+        <script src="searcher-c2a407aa.js"></script>
 
-        <script src="clipboard.min.js"></script>
-        <script src="highlight.js"></script>
-        <script src="book.js"></script>
+        <script src="clipboard-1626706a.min.js"></script>
+        <script src="highlight-abc7f01d.js"></script>
+        <script src="book-a0b12cfe.js"></script>
 
         <!-- Custom JS scripts -->
 
@@ -920,6 +933,7 @@ rust_sfq = "0.1"
             window.setTimeout(window.print, 100);
         });
         </script>
+
 
     </div>
     </body>
