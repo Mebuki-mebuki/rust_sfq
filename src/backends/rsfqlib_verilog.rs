@@ -74,6 +74,7 @@ impl Backend for RsfqlibVerilog {
                     name,
                     c.wire_names.get(q).unwrap()
                 ),
+                Gate::Terminate { name: _, a: _ } => String::new(),
                 Gate::Subcircuit {
                     name,
                     inputs,

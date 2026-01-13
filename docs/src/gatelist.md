@@ -16,6 +16,7 @@
 | NDRO | ✅ | ✅ |
 | BUFF | ✅ | ✅ |
 | ZERO_ASYNC | ✅ | ✅ |
+| TERMINATE | ✅ | ✅ |
 
 ## Backends
 

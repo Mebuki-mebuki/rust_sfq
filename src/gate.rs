@@ -75,6 +75,10 @@ pub(crate) enum Gate {
         name: String,
         q: WireID,
     },
+    Terminate {
+        name: String,
+        a: WireID,
+    },
     Subcircuit {
         name: String,
         inputs: Vec<WireID>,

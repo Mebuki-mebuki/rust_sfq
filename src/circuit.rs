@@ -204,6 +204,18 @@ impl<const N_I: usize, const N_CI: usize, const N_O: usize, const N_CO: usize>
         return (wire1, wire2);
     }
 
+    pub fn terminate(&mut self, mut a: Wire) {
+        assert!(a.circuit_id() == self.id);
+        a.receive();
+
+        let gate_name = format!("XTERMINATE{}", self.generate_gate_id());
+        let gate = Gate::Terminate {
+            name: gate_name,
+            a: a.wire_id(),
+        };
+        self.gates.push(gate);
+    }
+
     // Gate for CounterWire
     pub fn cbuff(&mut self, mut q: CounterWire) -> CounterWire {
         assert!(q.circuit_id() == self.id);
@@ -300,6 +312,27 @@ impl<const N_I: usize, const N_CI: usize, const N_O: usize, const N_CO: usize>
         return cwire;
     }
 
+    pub fn cterminate(&mut self) -> CounterWire {
+        let gate_name = format!("XTERMINATE{}", self.generate_gate_id());
+        let a_name = format!("_{}_a", gate_name);
+        let mut a = self.generate_counter_wire(a_name);
+        a.receive();
+
+        let gate = Gate::Terminate {
+            name: gate_name,
+            a: a.wire_id(),
+        };
+        self.gates.push(gate);
+
+        return a;
+    }
+
+    pub fn cterminate_labeled(&mut self, label: &str) -> CounterWire {
+        let cwire = self.cterminate();
+        self.label(&cwire, label);
+        return cwire;
+    }
+
     pub fn subcircuit<const M_I: usize, const M_CI: usize, const M_O: usize, const M_CO: usize>(
         &mut self,
         circuit: &Circuit<M_I, M_CI, M_O, M_CO>,
@@ -388,6 +421,13 @@ impl<const N_I: usize, const N_CI: usize, const N_O: usize, const N_CO: usize>
             self.wire_names.insert(wire.wire_id(), name2.clone());
         } else {
             self.wire_names.insert(cwire.wire_id(), name1.clone());
+        }
+    }
+
+    // unifyの便利関数
+    pub fn unify_array<const N: usize>(&mut self, wires: [Wire; N], cwires: [CounterWire; N]) {
+        for (wire, cwire) in wires.into_iter().zip(cwires) {
+            self.unify(wire, cwire);
         }
     }
 }

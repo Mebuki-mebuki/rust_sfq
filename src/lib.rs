@@ -6,4 +6,4 @@ mod wire;
 
 pub use backends::*;
 pub use circuit::Circuit;
-pub use wire::Wire;
+pub use wire::{CounterWire, Wire};
