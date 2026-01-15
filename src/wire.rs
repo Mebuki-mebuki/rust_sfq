@@ -15,6 +15,7 @@ macro_rules! define_wire_type {
             cid: CircuitID,
             driver_count: isize,
             receiver_count: isize,
+            delay: usize,
         }
 
         impl $name {
@@ -25,6 +26,7 @@ macro_rules! define_wire_type {
                     cid,
                     driver_count: 0,
                     receiver_count: 0,
+                    delay: 0,
                 }
             }
 
@@ -32,8 +34,9 @@ macro_rules! define_wire_type {
                 self.driver_count += 1;
             }
 
-            pub(crate) fn receive(&mut self) {
+            pub(crate) fn receive(&mut self, delay: usize) {
                 self.receiver_count += 1;
+                self.delay = delay;
             }
         }
 
@@ -61,6 +64,15 @@ macro_rules! define_wire_type {
 
             fn circuit_id(&self) -> CircuitID {
                 return self.cid;
+            }
+        }
+
+        // % 演算子でタイミングを記述する
+        impl std::ops::Rem<usize> for $name {
+            type Output = ($name, usize);
+
+            fn rem(self, rhs: usize) -> Self::Output {
+                (self, rhs)
             }
         }
     };
