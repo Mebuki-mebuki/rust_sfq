@@ -1,8 +1,18 @@
+use std::sync::Once;
+
 use super::Backend;
 use crate::circuit::Circuit;
 use crate::gate::Gate;
 
 pub struct RsfqlibSpice;
+
+// Timing 未対応警告
+static WARN_ONCE: Once = Once::new();
+fn warn_timing_ignored() {
+    WARN_ONCE.call_once(|| {
+        eprintln!("Warning: timing information is currently not supported and will be ignored.");
+    });
+}
 
 //  (circuit, gate名, 引数WireIDリスト, ゲート名)
 macro_rules! gate_string {
@@ -15,6 +25,7 @@ impl Backend for RsfqlibSpice {
     fn generate<const N_I: usize, const N_CI: usize, const N_O: usize, const N_CO: usize>(
         c: &Circuit<N_I, N_CI, N_O, N_CO>,
     ) -> String {
+        warn_timing_ignored();
         let mut res = Vec::new();
 
         /* ------------------- header ------------------- */

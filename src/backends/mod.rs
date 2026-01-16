@@ -1,8 +1,10 @@
+mod logical_verilog;
 mod rsfqlib_spice;
 mod rsfqlib_verilog;
 
 use crate::circuit::Circuit;
 
+pub use logical_verilog::LogicalVerilog;
 pub use rsfqlib_spice::RsfqlibSpice;
 pub use rsfqlib_verilog::RsfqlibVerilog;
 

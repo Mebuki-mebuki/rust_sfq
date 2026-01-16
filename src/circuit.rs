@@ -82,10 +82,16 @@ impl<const N_I: usize, const N_CI: usize, const N_O: usize, const N_CO: usize>
     pub(crate) fn gates(&self) -> &Vec<Gate> {
         &self.gates
     }
+    pub(crate) fn wires(&self) -> &HashMap<WireID, WireInfo> {
+        &self.wires
+    }
 
-    pub(crate) fn get_resolved_wire_name(&self, id: WireID) -> &str {
+    pub(crate) fn get_resolved_wire(&self, id: WireID) -> &WireInfo {
         let resolved_id = self.resolved_wire_id(id);
-        &self.wires.get(&resolved_id).unwrap().name
+        &self.wires.get(&resolved_id).unwrap()
+    }
+    pub(crate) fn get_resolved_wire_name(&self, id: WireID) -> &str {
+        self.get_resolved_wire(id).name.as_str()
     }
 
     pub(crate) fn all_wire_names(&self) -> Vec<&str> {
@@ -196,7 +202,7 @@ impl<const N_I: usize, const N_CI: usize, const N_O: usize, const N_CO: usize>
     }
 
     // unify で生じるエイリアスを解決する
-    fn resolved_wire_id(&self, id: WireID) -> WireID {
+    pub(crate) fn resolved_wire_id(&self, id: WireID) -> WireID {
         let mut current_id = id;
         while let Some(next_id) = self.aliases.get(&current_id) {
             current_id = *next_id;
