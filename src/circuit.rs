@@ -4,50 +4,82 @@ use twox_hash::XxHash32;
 
 use crate::gate::Gate;
 use crate::id::{CircuitID, WireID};
-use crate::wire::{CounterWire, HasWireID, Wire};
+use crate::wire::{CounterWire, TimedWire, Wire, WireInfo, WireKey};
 
 pub struct Circuit<const N_I: usize, const N_CI: usize, const N_O: usize, const N_CO: usize> {
-    pub(crate) name: String,
     id: CircuitID,
-    pub(crate) inputs: [String; N_I],
-    pub(crate) counter_inputs: [String; N_CI],
-    pub(crate) outputs: [String; N_O],
-    pub(crate) counter_outputs: [String; N_CO],
+    name: String,
+    inputs: [String; N_I],
+    counter_inputs: [String; N_CI],
+    outputs: [String; N_O],
+    counter_outputs: [String; N_CO],
 
-    pub(crate) wire_names: HashMap<WireID, String>,
-    pub(crate) gates: Vec<Gate>,
+    wires: HashMap<WireID, WireInfo>,
+    gates: Vec<Gate>,
+    aliases: HashMap<WireID, WireID>,
 
     next_wire_id: u32,
     next_gate_id: u32,
 }
 
+impl<const N_I: usize, const N_CI: usize, const N_O: usize, const N_CO: usize>
+    Circuit<N_I, N_CI, N_O, N_CO>
+{
+    /* 検証用の関数群 */
+    fn is_explicit_name(&self, name: &str) -> bool {
+        !name.starts_with("_")
+    }
+    fn assert_wire_name_exists(&self, name: &str) {
+        assert!(
+            self.wires.values().all(|v| v.name != name),
+            "{}",
+            format!("Wire `{}` is already exist!", name).red()
+        );
+    }
+    fn assert_circuit_id(&self, cid: CircuitID) {
+        assert!(cid == self.id);
+    }
+    fn assert_conflict_name(&self, old_name: &str, name: &str, src: &str) {
+        assert!(
+            old_name == name || !self.is_explicit_name(old_name) || !self.is_explicit_name(name),
+            "{}",
+            format!("Conflict names in {}: `{}`, `{}`!", src, old_name, name).red()
+        );
+    }
+    fn assert_explicit_name(&self, name: &str) {
+        assert!(
+            self.is_explicit_name(name),
+            "{}",
+            format!("Wire `{}` must not start with underscore!", name).red()
+        );
+    }
+}
+
 // 1出力ゲート関数定義用マクロ (関数名, Enumバリアント名, 引数Wireリスト)
 macro_rules! define_gate_fn {
     ($fn_name:ident, $fn_name_labeled:ident, $variant:ident, [$($arg:ident),*]) => {
-        pub fn $fn_name(&mut self, $($arg:(Wire, usize)),*) -> Wire {
+        pub fn $fn_name(&mut self, $($arg:TimedWire),*) -> Wire {
             // 入力 Wire のチェック, receive
             $(
-                let (mut $arg, delay) = $arg;
-                assert!($arg.circuit_id() == self.id);
-                $arg.receive(delay);
+                let $arg = self.process_input($arg);
             )*
             // ゲート名, 出力 Wire の生成, drive
-            let gate_name = format!("X{}{}", stringify!($fn_name).to_uppercase(), self.generate_gate_id());
+            let gate_name = format!("{}{}", stringify!($fn_name).to_uppercase(), self.generate_gate_id());
             let q_name = format!("_{}_q", gate_name);
-            let mut q = self.generate_wire(q_name);
-            q.drive();
+            let q_key = self.generate_wire(q_name);
+
             // ゲートの作成, 追加
             let gate = Gate::$variant {
                 name: gate_name,
-                $( $arg: $arg.wire_id(), )*
-                q: q.wire_id(),
+                $( $arg, )*
+                q: q_key.id,
             };
             self.gates.push(gate);
 
-            return q;
+            return Wire(q_key);
         }
 
-        pub fn $fn_name_labeled (&mut self, $($arg: (Wire, usize),)* label: &str) -> Wire {
+        pub fn $fn_name_labeled (&mut self, $($arg: TimedWire,)* label: &str) -> Wire {
             let wire = self.$fn_name($($arg),*);
             self.label(&wire, label);
             return wire;
@@ -58,6 +90,7 @@ macro_rules! define_gate_fn {
 impl<const N_I: usize, const N_CI: usize, const N_O: usize, const N_CO: usize>
     Circuit<N_I, N_CI, N_O, N_CO>
 {
+    // 新しい回路を作成するのに使う関数
     pub fn create(
         inputs: [&str; N_I],
         counter_inputs: [&str; N_CI],
@@ -74,31 +107,26 @@ impl<const N_I: usize, const N_CI: usize, const N_O: usize, const N_CO: usize>
         // 固定のシードでハッシュ化
         let cid: u32 = XxHash32::oneshot(0, name.as_bytes());
         let mut circuit = Self {
-            name: name.to_string(),
             id: CircuitID(cid),
+            name: name.to_string(),
             inputs: inputs.map(|s| s.to_string()),
             counter_inputs: counter_inputs.map(|s| s.to_string()),
             outputs: outputs.map(|s| s.to_string()),
             counter_outputs: counter_outputs.map(|s| s.to_string()),
-            wire_names: HashMap::new(),
+            wires: HashMap::new(),
             gates: Vec::new(),
+            aliases: HashMap::new(),
             next_wire_id: 1,
             next_gate_id: 1,
         };
 
-        // 入出力に対応する Wire 生成
-        let mut input_wires = inputs.map(|s| circuit.generate_wire(s.to_string()));
-        let mut counter_input_wires =
-            counter_inputs.map(|s| circuit.generate_counter_wire(s.to_string()));
-        let mut output_wires = outputs.map(|s| circuit.generate_counter_wire(s.to_string()));
-        let mut counter_output_wires =
-            counter_outputs.map(|s| circuit.generate_wire(s.to_string()));
-
-        // 初期条件の drive, receive
-        input_wires.iter_mut().for_each(|w| w.drive());
-        counter_input_wires.iter_mut().for_each(|w| w.receive(0));
-        output_wires.iter_mut().for_each(|w| w.receive(0));
-        counter_output_wires.iter_mut().for_each(|w| w.drive());
+        // 入出力に対応する WireInfo, WireKey 生成
+        let input_wires = inputs.map(|s| Wire(circuit.generate_wire(s.to_string())));
+        let counter_input_wires =
+            counter_inputs.map(|s| CounterWire(circuit.generate_wire(s.to_string())));
+        let output_wires = outputs.map(|s| CounterWire(circuit.generate_wire(s.to_string())));
+        let counter_output_wires =
+            counter_outputs.map(|s| Wire(circuit.generate_wire(s.to_string())));
 
         return (
             circuit,
@@ -109,28 +137,18 @@ impl<const N_I: usize, const N_CI: usize, const N_O: usize, const N_CO: usize>
         );
     }
 
-    fn generate_wire(&mut self, name: String) -> Wire {
-        let wid = WireID(self.next_wire_id);
-        self.next_wire_id += 1;
-        assert!(
-            self.wire_names.values().all(|v| v != &name),
-            "{}",
-            format!("Wire `{}` is already exist!", name).red()
-        );
-        self.wire_names.insert(wid, name);
-        return Wire::new(wid, self.id);
-    }
+    // 新しい WireInfo を wires に追加し、対応する WireKey を返す
+    fn generate_wire(&mut self, name: String) -> WireKey {
+        self.assert_wire_name_exists(&name);
 
-    fn generate_counter_wire(&mut self, name: String) -> CounterWire {
         let wid = WireID(self.next_wire_id);
         self.next_wire_id += 1;
-        assert!(
-            self.wire_names.values().all(|v| v != &name),
-            "{}",
-            format!("Wire `{}` is already exist!", name).red()
-        );
-        self.wire_names.insert(wid, name);
-        return CounterWire::new(wid, self.id);
+
+        let key = WireKey::new(wid, self.id);
+        let info = WireInfo::new(name);
+        self.wires.insert(key.id, info);
+
+        return key;
     }
 
     fn generate_gate_id(&mut self) -> u32 {
@@ -139,28 +157,59 @@ impl<const N_I: usize, const N_CI: usize, const N_O: usize, const N_CO: usize>
         return res;
     }
 
+    // unify で生じるエイリアスを解決する
+    fn resolved_wire_id(&self, id: WireID) -> WireID {
+        let mut current_id = id;
+        while let Some(next_id) = self.aliases.get(&current_id) {
+            current_id = *next_id;
+        }
+        current_id
+    }
+
     // circuit.label(&wire, "hoge") でラベル付け
-    #[allow(private_bounds)]
-    pub fn label<T>(&mut self, wire: &T, label: &str)
-    where
-        T: HasWireID,
-    {
-        assert!(wire.circuit_id() == self.id);
-        let old_name = self.wire_names.get(&wire.wire_id()).unwrap();
-        assert!(
-            old_name.starts_with("_"),
-            "{}",
-            format!("Wire `{}` is already labeled!", old_name).red()
-        );
-        assert!(
-            !label.starts_with("_"),
-            "{}",
-            format!("Label `{}` must not start with underscore!", label).red()
-        );
-        self.wire_names.insert(wire.wire_id(), label.to_string());
+    fn label_common(&mut self, id: WireID, name: &str) {
+        let old_name = &self.wires.get(&id).unwrap().name;
+        self.assert_explicit_name(name);
+        self.assert_conflict_name(old_name, name, "label");
+        self.wires
+            .entry(id)
+            .and_modify(|info| info.name = name.to_string());
+    }
+
+    pub fn label(&mut self, wire: &Wire, name: &str) {
+        self.assert_circuit_id(wire.0.cid);
+        self.label_common(wire.0.id, name);
+    }
+
+    pub fn clabel(&mut self, cwire: &CounterWire, name: &str) {
+        self.assert_circuit_id(cwire.0.cid);
+        self.label_common(cwire.0.id, name);
     }
 
     //-------------------- Gate Functions ----------------------//
+
+    // 入力チェック, consume, delay 設定
+    pub fn process_input(&mut self, a: TimedWire) -> WireID {
+        let a_delay = a.1;
+        let mut a_key = a.0.0;
+
+        self.assert_circuit_id(a_key.cid);
+        a_key.consume();
+        self.wires
+            .entry(a_key.id)
+            .and_modify(|info| info.delay = a_delay);
+
+        return a_key.id;
+    }
+    // CounterWire は delay = 0 で固定
+    pub fn process_counter_input(&mut self, a: CounterWire) -> WireID {
+        let mut a_key = a.0;
+
+        self.assert_circuit_id(a_key.cid);
+        a_key.consume();
+
+        return a_key.id;
+    }
 
     define_gate_fn!(jtl, jtl_labeled, Jtl, [a]);
     define_gate_fn!(merge, merge_labeled, Merge, [a, b]);
@@ -174,99 +223,90 @@ impl<const N_I: usize, const N_CI: usize, const N_O: usize, const N_CO: usize>
     define_gate_fn!(buff, buff_labeled, Buff, [a]);
     define_gate_fn!(zero_async, zero_async_labeled, ZeroAsync, []);
 
-    pub fn split(&mut self, a: (Wire, usize)) -> (Wire, Wire) {
-        let (mut a, delay) = a;
-        // 入力 Wire のチェック, receive
-        assert!(a.circuit_id() == self.id);
-        a.receive(delay);
-        // ゲート名, 出力 Wire の生成, drive
-        let gate_name = format!("XSPLIT{}", self.generate_gate_id());
+    pub fn split(&mut self, a: TimedWire) -> (Wire, Wire) {
+        let a_id = self.process_input(a);
+
+        // ゲート名, 出力 Wire の生成
+        let gate_name = format!("SPLIT{}", self.generate_gate_id());
         let q1_name = format!("_{}_q1", gate_name);
         let q2_name = format!("_{}_q2", gate_name);
-        let mut q1 = self.generate_wire(q1_name);
-        let mut q2 = self.generate_wire(q2_name);
-        q1.drive();
-        q2.drive();
+        let q1_key = self.generate_wire(q1_name);
+        let q2_key = self.generate_wire(q2_name);
+
         // ゲートの作成, 追加
         let gate = Gate::Split {
             name: gate_name,
-            a: a.wire_id(),
-            q1: q1.wire_id(),
-            q2: q2.wire_id(),
+            a: a_id,
+            q1: q1_key.id,
+            q2: q2_key.id,
         };
         self.gates.push(gate);
 
-        return (q1, q2);
+        return (Wire(q1_key), Wire(q2_key));
     }
 
-    pub fn split_labeled(&mut self, a: (Wire, usize), label1: &str, label2: &str) -> (Wire, Wire) {
+    pub fn split_labeled(&mut self, a: TimedWire, label1: &str, label2: &str) -> (Wire, Wire) {
         let (wire1, wire2) = self.split(a);
         self.label(&wire1, label1);
         self.label(&wire2, label2);
         return (wire1, wire2);
     }
 
-    pub fn terminate(&mut self, a: (Wire, usize)) {
-        let (mut a, delay) = a;
-        assert!(a.circuit_id() == self.id);
-        a.receive(delay);
+    pub fn terminate(&mut self, a: TimedWire) {
+        let a_id = self.process_input(a);
 
-        let gate_name = format!("XTERMINATE{}", self.generate_gate_id());
+        let gate_name = format!("TERMINATE{}", self.generate_gate_id());
         let gate = Gate::Terminate {
             name: gate_name,
-            a: a.wire_id(),
+            a: a_id,
         };
         self.gates.push(gate);
     }
 
-    // Gate for CounterWire
-    pub fn cbuff(&mut self, mut q: CounterWire) -> CounterWire {
-        assert!(q.circuit_id() == self.id);
-        q.drive(); // CounterWire を drive
+    /* Gates for CounterWire */
+    pub fn cbuff(&mut self, q: CounterWire) -> CounterWire {
+        let q_id = self.process_counter_input(q);
         // ゲート名, 出力 CounterWire の生成, receive
-        let gate_name = format!("XBUFF{}", self.generate_gate_id());
+        let gate_name = format!("BUFF{}", self.generate_gate_id());
         let a_name = format!("_{}_a", gate_name);
-        let mut a = self.generate_counter_wire(a_name);
-        a.receive(0);
+        let a_key = self.generate_wire(a_name);
+
         // ゲートの作成, 追加
         let gate = Gate::Buff {
             name: gate_name,
-            a: a.wire_id(),
-            q: q.wire_id(),
+            a: a_key.id,
+            q: q_id,
         };
         self.gates.push(gate);
 
-        return a;
+        return CounterWire(a_key);
     }
 
     pub fn cbuff_labeled(&mut self, q: CounterWire, label: &str) -> CounterWire {
         let cwire = self.cbuff(q);
-        self.label(&cwire, label);
+        self.clabel(&cwire, label);
         return cwire;
     }
 
     // q1(CounterWire)を受けとりq2(Wire)とa(CounterWire)を返す
-    pub fn csplit(&mut self, mut q1: CounterWire) -> (Wire, CounterWire) {
-        assert!(q1.circuit_id() == self.id);
-        q1.drive();
+    pub fn csplit(&mut self, q1: CounterWire) -> (Wire, CounterWire) {
+        let q1_id = self.process_counter_input(q1);
 
-        let gate_name = format!("XSPLIT{}", self.generate_gate_id());
+        let gate_name = format!("SPLIT{}", self.generate_gate_id());
         let q2_name = format!("_{}_q2", gate_name);
         let a_name = format!("_{}_a", gate_name);
-        let mut q2 = self.generate_wire(q2_name);
-        let mut a = self.generate_counter_wire(a_name);
-        q2.drive();
-        a.receive(0);
+        let q2_key = self.generate_wire(q2_name);
+        let a_key = self.generate_wire(a_name);
 
         let gate = Gate::Split {
             name: gate_name,
-            a: a.wire_id(),
-            q1: q1.wire_id(),
-            q2: q2.wire_id(),
+            a: a_key.id,
+            q1: q1_id,
+            q2: q2_key.id,
         };
         self.gates.push(gate);
 
-        return (q2, a);
+        return (Wire(q2_key), CounterWire(a_key));
     }
 
     pub fn csplit_labeled(
@@ -277,31 +317,29 @@ impl<const N_I: usize, const N_CI: usize, const N_O: usize, const N_CO: usize>
     ) -> (Wire, CounterWire) {
         let (q2, a) = self.csplit(q1);
         self.label(&q2, label_q2);
-        self.label(&a, label_a);
+        self.clabel(&a, label_a);
         return (q2, a);
     }
 
     // q1, q2(CounterWire)を受け取りa(CounterWire)を返す
-    pub fn csplit2(&mut self, mut q1: CounterWire, mut q2: CounterWire) -> CounterWire {
-        assert!(q1.circuit_id() == self.id);
-        assert!(q2.circuit_id() == self.id);
-        q1.drive();
-        q2.drive();
+    pub fn csplit2(&mut self, q1: CounterWire, q2: CounterWire) -> CounterWire {
+        let q1_id = self.process_counter_input(q1);
+        let q2_id = self.process_counter_input(q2);
 
-        let gate_name = format!("XSPLIT{}", self.generate_gate_id());
+        let gate_name = format!("SPLIT{}", self.generate_gate_id());
         let a_name = format!("_{}_a", gate_name);
-        let mut a = self.generate_counter_wire(a_name);
-        a.receive(0);
+        let a_key = self.generate_wire(a_name);
+
         // ゲートの作成, 追加
         let gate = Gate::Split {
             name: gate_name,
-            a: a.wire_id(),
-            q1: q1.wire_id(),
-            q2: q2.wire_id(),
+            a: a_key.id,
+            q1: q1_id,
+            q2: q2_id,
         };
         self.gates.push(gate);
 
-        return a;
+        return CounterWire(a_key);
     }
 
     pub fn csplit2_labeled(
@@ -311,70 +349,63 @@ impl<const N_I: usize, const N_CI: usize, const N_O: usize, const N_CO: usize>
         label: &str,
     ) -> CounterWire {
         let cwire = self.csplit2(q1, q2);
-        self.label(&cwire, label);
+        self.clabel(&cwire, label);
         return cwire;
     }
 
     pub fn cterminate(&mut self) -> CounterWire {
-        let gate_name = format!("XTERMINATE{}", self.generate_gate_id());
+        let gate_name = format!("TERMINATE{}", self.generate_gate_id());
         let a_name = format!("_{}_a", gate_name);
-        let mut a = self.generate_counter_wire(a_name);
-        a.receive(0);
+        let a_key = self.generate_wire(a_name);
 
         let gate = Gate::Terminate {
             name: gate_name,
-            a: a.wire_id(),
+            a: a_key.id,
         };
         self.gates.push(gate);
 
-        return a;
+        return CounterWire(a_key);
     }
 
     pub fn cterminate_labeled(&mut self, label: &str) -> CounterWire {
         let cwire = self.cterminate();
-        self.label(&cwire, label);
+        self.clabel(&cwire, label);
         return cwire;
     }
 
     pub fn subcircuit<const M_I: usize, const M_CI: usize, const M_O: usize, const M_CO: usize>(
         &mut self,
         circuit: &Circuit<M_I, M_CI, M_O, M_CO>,
-        mut inputs: [(Wire, usize); M_I],
-        mut counter_inputs: [CounterWire; M_CI],
+        inputs: [TimedWire; M_I],
+        counter_inputs: [CounterWire; M_CI],
     ) -> ([Wire; M_O], [CounterWire; M_CO]) {
         // 入力Wireの処理
-        assert!(inputs.iter().all(|(w, _)| w.circuit_id() == self.id));
-        assert!(counter_inputs.iter().all(|w| w.circuit_id() == self.id));
-        inputs.iter_mut().for_each(|(w, d)| w.receive(*d));
-        counter_inputs.iter_mut().for_each(|cw| cw.drive());
+        let input_ids: Vec<WireID> = inputs.map(|tw| self.process_input(tw)).to_vec();
+        let counter_input_ids: Vec<WireID> = counter_inputs
+            .map(|cw| self.process_counter_input(cw))
+            .to_vec();
 
-        let gate_name = format!("X{}{}", circuit.name, self.generate_gate_id());
+        let gate_name = format!("{}{}", circuit.name, self.generate_gate_id());
 
         // 出力Wireの生成
-        let output_wires = circuit.outputs.clone().map(|s| {
+        let output_wires: [Wire; M_O] = circuit.outputs.clone().map(|s| {
             let wire_name = format!("_{}_{}", gate_name, s);
-            let mut wire = self.generate_wire(wire_name);
-            wire.drive();
-            wire
+            let wire_key = self.generate_wire(wire_name);
+            Wire(wire_key)
         });
-        let counter_output_wires = circuit.counter_outputs.clone().map(|s| {
+        let counter_output_wires: [CounterWire; M_CO] = circuit.counter_outputs.clone().map(|s| {
             let wire_name = format!("_{}_{}", gate_name, s);
-            let mut cwire = self.generate_counter_wire(wire_name);
-            cwire.receive(0);
-            cwire
+            let wire_key = self.generate_wire(wire_name);
+            CounterWire(wire_key)
         });
 
         // ゲートの生成
-        let gate_inputs: Vec<WireID> = inputs
-            .iter()
-            .map(|(w, _)| w.wire_id())
-            .chain(counter_output_wires.iter().map(|cw| cw.wire_id()))
-            .collect();
-        let gate_outputs: Vec<WireID> = output_wires
-            .iter()
-            .map(|w| w.wire_id())
-            .chain(counter_inputs.iter().map(|cw| cw.wire_id()))
-            .collect();
+        let mut gate_inputs: Vec<WireID> = input_ids;
+        gate_inputs.extend(counter_output_wires.iter().map(|cw| cw.0.id));
+
+        let mut gate_outputs: Vec<WireID> = output_wires.iter().map(|w| w.0.id).collect();
+        gate_outputs.extend(counter_input_ids);
+
         let gate = Gate::Subcircuit {
             name: gate_name,
             inputs: gate_inputs,
@@ -389,42 +420,57 @@ impl<const N_I: usize, const N_CI: usize, const N_O: usize, const N_CO: usize>
     //-------------------- Wire Functions ----------------------//
 
     // 同一のidを持ったWireとCounterWireを生成する
-    pub fn gen_loop(&mut self, label: &str) -> (Wire, CounterWire) {
-        let mut wire = self.generate_wire(label.to_string());
-        let mut cwire = CounterWire::new(wire.wire_id(), self.id);
-        wire.drive();
-        cwire.receive(0);
+    pub fn gen_loop(&mut self, name: &str) -> (Wire, CounterWire) {
+        self.assert_explicit_name(name);
+        let key = self.generate_wire(name.to_string());
+        let wire = Wire(key.clone());
+        let cwire = CounterWire(key);
         return (wire, cwire);
     }
 
     // Wire と CounterWire を統合
-    pub fn unify(&mut self, mut wire: Wire, mut cwire: CounterWire) {
-        assert!(wire.circuit_id() == self.id);
-        assert!(cwire.circuit_id() == self.id);
+    pub fn unify(&mut self, wire: Wire, cwire: CounterWire) {
+        let mut key = wire.0;
+        let mut ckey = cwire.0;
+
+        self.assert_circuit_id(key.cid);
+        self.assert_circuit_id(ckey.cid);
 
         // wireがcounter wireをdrive
-        wire.receive(0);
-        cwire.drive();
+        key.consume();
+        ckey.consume();
+
+        let info1 = self.wires.get(&key.id).unwrap();
+        let info2 = self.wires.get(&ckey.id).unwrap();
 
         // 名前の解決
-        let name1 = self.wire_names.get(&wire.wire_id()).unwrap();
-        let name2 = self.wire_names.get(&cwire.wire_id()).unwrap();
-
-        let named1 = !name1.starts_with("_");
-        let named2 = !name2.starts_with("_");
-
-        if named1 && named2 {
-            assert!(
-                name1 == name2,
-                "{}",
-                format!("Conflict names in unify: `{}`, `{}`!", name1, name2).red()
-            );
-            self.wire_names.insert(cwire.wire_id(), name1.clone());
-        } else if named2 {
-            self.wire_names.insert(wire.wire_id(), name2.clone());
+        let name1 = &info1.name;
+        let name2 = &info2.name;
+        self.assert_conflict_name(name1, name2, "unify");
+        let name = if self.is_explicit_name(name1) {
+            name1
         } else {
-            self.wire_names.insert(cwire.wire_id(), name1.clone());
-        }
+            name2
+        };
+
+        // delay は receive 時に決まるので, already received の CounterWire の方を使用
+        let delay = info2.delay;
+
+        // id の小さい方を代表にする
+        let (prime_id, sub_id) = if key.id.0 < ckey.id.0 {
+            (key.id, ckey.id)
+        } else {
+            (ckey.id, key.id)
+        };
+        let new_info = WireInfo {
+            name: name.to_string(),
+            delay,
+        };
+
+        // 情報の更新
+        self.aliases.insert(sub_id, prime_id);
+        self.wires.insert(prime_id, new_info);
+        self.wires.remove(&sub_id);
     }
 
     // unifyの便利関数
