@@ -7,10 +7,7 @@ pub struct RsfqlibSpice;
 //  (circuit, gate名, 引数WireIDリスト, ゲート名)
 macro_rules! gate_string {
     ($c:ident, $name:ident, [$($arg:ident),*],$gate:expr) => {
-        vec![$name,
-            $($c.wire_names.get($arg).unwrap(), )*
-            concat!("THmitll_", $gate)
-        ].join(" ")
+        format!("X{} {} THmitll_{}", $name, vec![$($c.get_resolved_wire_name(*$arg), )*].join(" "), $gate)
     };
 }
 
@@ -21,21 +18,10 @@ impl Backend for RsfqlibSpice {
         let mut res = Vec::new();
 
         /* ------------------- header ------------------- */
-        res.push(format!(
-            ".subckt {} {}",
-            c.name,
-            c.inputs
-                .iter()
-                .chain(c.counter_outputs.iter())
-                .chain(c.outputs.iter())
-                .chain(c.counter_inputs.iter())
-                .map(|s| s.as_str())
-                .collect::<Vec<&str>>()
-                .join(" "),
-        ));
+        res.push(format!(".subckt {} {}", c.name(), c.all_ports().join(" "),));
 
         /* ------------------- body ------------------- */
-        for gate in c.gates.iter() {
+        for gate in c.gates().iter() {
             let s = match gate {
                 Gate::Jtl { name, a, q } => gate_string!(c, name, [a, q], "JTL"),
                 Gate::Split { name, a, q1, q2 } => gate_string!(c, name, [a, q1, q2], "SPLIT"),
@@ -50,9 +36,8 @@ impl Backend for RsfqlibSpice {
                 Gate::Buff { name, a, q } => gate_string!(c, name, [a, q], "BUFF"),
                 Gate::ZeroAsync { name, q } => gate_string!(c, name, [q], "ALWAYS0_ASYNC_NOA"),
                 Gate::Terminate { name, a } => {
-                    format!("R{} {} 0 2", name, c.wire_names.get(a).unwrap())
+                    format!("R{} {} 0 2", name, c.get_resolved_wire_name(*a))
                 }
-
                 Gate::Subcircuit {
                     name,
                     inputs,
@@ -62,9 +47,9 @@ impl Backend for RsfqlibSpice {
                     let ports: Vec<&str> = inputs
                         .iter()
                         .chain(outputs.iter())
-                        .map(|wid| c.wire_names.get(wid).unwrap().as_str())
+                        .map(|wid| c.get_resolved_wire_name(*wid))
                         .collect();
-                    format!("{} {} {}", name, ports.join(" "), circuit)
+                    format!("X{} {} {}", name, ports.join(" "), circuit)
                 }
                 _ => panic!("Unsupported Gate"),
             };

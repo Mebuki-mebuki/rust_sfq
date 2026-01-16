@@ -53,6 +53,44 @@ impl<const N_I: usize, const N_CI: usize, const N_O: usize, const N_CO: usize>
             format!("Wire `{}` must not start with underscore!", name).red()
         );
     }
+
+    /* バックエンド生成に使用する関数群 */
+    pub(crate) fn name(&self) -> &str {
+        &self.name
+    }
+
+    // 順番に注意
+    pub(crate) fn in_ports(&self) -> Vec<&str> {
+        self.inputs
+            .iter()
+            .chain(self.counter_outputs.iter())
+            .map(|s| s.as_str())
+            .collect()
+    }
+    pub(crate) fn out_ports(&self) -> Vec<&str> {
+        self.outputs
+            .iter()
+            .chain(self.counter_inputs.iter())
+            .map(|s| s.as_str())
+            .collect()
+    }
+    pub(crate) fn all_ports(&self) -> Vec<&str> {
+        [self.in_ports(), self.out_ports()].concat()
+    }
+
+    // 順番は記述順
+    pub(crate) fn gates(&self) -> &Vec<Gate> {
+        &self.gates
+    }
+
+    pub(crate) fn get_resolved_wire_name(&self, id: WireID) -> &str {
+        let resolved_id = self.resolved_wire_id(id);
+        &self.wires.get(&resolved_id).unwrap().name
+    }
+
+    pub(crate) fn all_wire_names(&self) -> Vec<&str> {
+        self.wires.values().map(|info| info.name.as_str()).collect()
+    }
 }
 
 // 1出力ゲート関数定義用マクロ (関数名, Enumバリアント名, 引数Wireリスト)
@@ -189,7 +227,7 @@ impl<const N_I: usize, const N_CI: usize, const N_O: usize, const N_CO: usize>
     //-------------------- Gate Functions ----------------------//
 
     // 入力チェック, consume, delay 設定
-    pub fn process_input(&mut self, a: TimedWire) -> WireID {
+    pub(crate) fn process_input(&mut self, a: TimedWire) -> WireID {
         let a_delay = a.1;
         let mut a_key = a.0.0;
 
@@ -202,7 +240,7 @@ impl<const N_I: usize, const N_CI: usize, const N_O: usize, const N_CO: usize>
         return a_key.id;
     }
     // CounterWire は delay = 0 で固定
-    pub fn process_counter_input(&mut self, a: CounterWire) -> WireID {
+    pub(crate) fn process_counter_input(&mut self, a: CounterWire) -> WireID {
         let mut a_key = a.0;
 
         self.assert_circuit_id(a_key.cid);

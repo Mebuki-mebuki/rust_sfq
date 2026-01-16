@@ -10,7 +10,7 @@ pub struct RsfqlibVerilog;
 macro_rules! gate_string {
     ($c:ident, $name:ident, [$($arg:ident),*], $gate:expr) => {
         format!("THmitll_{}_v3p0_extracted {} ({});", $gate, $name,
-            vec![ $($c.wire_names.get($arg).unwrap().as_str(), )*].join(", ")
+            vec![ $($c.get_resolved_wire_name(*$arg), )*].join(", ")
         )
     };
 }
@@ -22,31 +22,20 @@ impl Backend for RsfqlibVerilog {
         let mut res = Vec::new();
 
         /* ------------------- header ------------------- */
-        let in_ports: Vec<&str> = c
-            .inputs
-            .iter()
-            .chain(c.counter_outputs.iter())
-            .map(|s| s.as_str())
-            .collect();
-        let out_ports: Vec<&str> = c
-            .outputs
-            .iter()
-            .chain(c.counter_inputs.iter())
-            .map(|s| s.as_str())
-            .collect();
-        let ports: Vec<&str> = [in_ports.clone(), out_ports.clone()].concat();
-        res.push(format!("module {} ({});", c.name, ports.join(", ")));
+        let in_ports: Vec<&str> = c.in_ports();
+        let out_ports: Vec<&str> = c.out_ports();
+        let ports: Vec<&str> = c.all_ports();
+        res.push(format!("module {} ({});", c.name(), ports.join(", ")));
         if in_ports.len() > 0 {
             res.push(format!("input {};", in_ports.join(", ")));
         }
-        if c.outputs.len() > 0 {
+        if out_ports.len() > 0 {
             res.push(format!("output {};", out_ports.join(", ")));
         }
 
         let wires: Vec<&str> = c
-            .wire_names
-            .values()
-            .map(|s| s.as_str())
+            .all_wire_names()
+            .into_iter()
             .filter(|s| !ports.contains(s)) // ポートのwireは除外
             .collect::<BTreeSet<&str>>() // 重複削除, ソート
             .into_iter()
@@ -56,7 +45,7 @@ impl Backend for RsfqlibVerilog {
         }
 
         /* ------------------- body ------------------- */
-        for gate in c.gates.iter() {
+        for gate in c.gates().iter() {
             let s = match gate {
                 Gate::Jtl { name, a, q } => gate_string!(c, name, [a, q], "JTL"),
                 Gate::Split { name, a, q1, q2 } => gate_string!(c, name, [a, q1, q2], "SPLIT"),
@@ -72,7 +61,7 @@ impl Backend for RsfqlibVerilog {
                 Gate::ZeroAsync { name, q } => format!(
                     "THmitll_ALWAYS0_ASYNC_NOA {} ({});",
                     name,
-                    c.wire_names.get(q).unwrap()
+                    c.get_resolved_wire_name(*q)
                 ),
                 Gate::Terminate { name: _, a: _ } => String::new(),
                 Gate::Subcircuit {
@@ -84,7 +73,7 @@ impl Backend for RsfqlibVerilog {
                     let ports: Vec<&str> = inputs
                         .iter()
                         .chain(outputs.iter())
-                        .map(|wid| c.wire_names.get(wid).unwrap().as_str())
+                        .map(|wid| c.get_resolved_wire_name(*wid))
                         .collect();
                     format!("{} {} ({});", circuit, name, ports.join(", "))
                 }
