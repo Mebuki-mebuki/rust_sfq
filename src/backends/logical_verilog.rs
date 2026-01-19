@@ -83,7 +83,8 @@ impl Backend for LogicalVerilog {
                 let dname = delayed_name(&info.name, d);
                 assignments.push(format!("{} <= {};", dname, prev_name));
 
-                regs.insert(dname);
+                // 配線用 reg を初期値 0 で宣言
+                regs.insert(format!("{} = 1'b0", dname));
                 prev_name = regs.last().unwrap();
             }
             delayed_wire_names.insert(id, delayed_name(&info.name, delay));
