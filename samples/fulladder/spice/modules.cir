@@ -1,0 +1,23 @@
+.subckt HalfAdder a b clk c s
+XSPLIT1 clk _SPLIT1_q1 _SPLIT1_q2 THmitll_SPLIT
+XSPLIT2 a _SPLIT2_q1 _SPLIT2_q2 THmitll_SPLIT
+XSPLIT3 b _SPLIT3_q1 _SPLIT3_q2 THmitll_SPLIT
+XAND4 _SPLIT2_q1 _SPLIT3_q1 _SPLIT1_q1 c THmitll_AND2
+XXOR5 _SPLIT2_q2 _SPLIT3_q2 _SPLIT1_q2 s THmitll_XOR
+.ends
+.subckt FullAdder a b cin clk cout s
+XSPLIT1 clk _SPLIT1_q1 _SPLIT1_q2 THmitll_SPLIT
+XSPLIT2 _SPLIT1_q1 _SPLIT2_q1 _SPLIT2_q2 THmitll_SPLIT
+XHalfAdder3 a b _SPLIT1_q2 _HalfAdder3_c _HalfAdder3_s HalfAdder
+XDFF4 cin _SPLIT2_q2 _DFF4_q THmitll_DFF
+XSPLIT5 _SPLIT2_q1 _SPLIT5_q1 _SPLIT5_q2 THmitll_SPLIT
+XBUFF6 _HalfAdder3_c _BUFF6_q THmitll_BUFF
+XBUFF7 _BUFF6_q _BUFF7_q THmitll_BUFF
+XDFF8 _BUFF7_q _SPLIT5_q1 _DFF8_q THmitll_DFF
+XBUFF9 _HalfAdder3_s _BUFF9_q THmitll_BUFF
+XBUFF10 _BUFF9_q _BUFF10_q THmitll_BUFF
+XBUFF11 _DFF4_q _BUFF11_q THmitll_BUFF
+XBUFF12 _BUFF11_q _BUFF12_q THmitll_BUFF
+XHalfAdder13 _BUFF10_q _BUFF12_q _SPLIT5_q2 _HalfAdder13_c s HalfAdder
+XMERGE14 _DFF8_q _HalfAdder13_c cout THmitll_MERGE
+.ends

@@ -1,0 +1,491 @@
+$date
+	Fri Mar  6 15:58:02 2026
+$end
+$version
+	Icarus Verilog
+$end
+$timescale
+	100fs
+$end
+$scope module top $end
+$var wire 1 ! clk $end
+$var wire 1 " s $end
+$var wire 1 # cout $end
+$var reg 1 $ __event $end
+$var reg 1 % a $end
+$var reg 1 & b $end
+$var reg 1 ' cin $end
+$var integer 32 ( i [31:0] $end
+$var integer 32 ) step [31:0] $end
+$scope module dut $end
+$var wire 1 $ __event $end
+$var wire 1 % a $end
+$var wire 1 & b $end
+$var wire 1 ' cin $end
+$var wire 1 ! clk $end
+$var wire 1 " s $end
+$var wire 1 # cout $end
+$var wire 1 * _SPLIT5_q2 $end
+$var wire 1 + _SPLIT5_q1 $end
+$var wire 1 , _SPLIT2_q2 $end
+$var wire 1 - _SPLIT2_q1 $end
+$var wire 1 . _SPLIT1_q2 $end
+$var wire 1 / _SPLIT1_q1 $end
+$var wire 1 0 _HalfAdder3_s $end
+$var wire 1 1 _HalfAdder3_c $end
+$var wire 1 2 _HalfAdder13_c $end
+$var wire 1 3 _DFF8_q $end
+$var wire 1 4 _DFF4_q $end
+$var wire 1 5 _BUFF9_q $end
+$var wire 1 6 _BUFF7_q $end
+$var wire 1 7 _BUFF6_q $end
+$var wire 1 8 _BUFF12_q $end
+$var wire 1 9 _BUFF11_q $end
+$var wire 1 : _BUFF10_q $end
+$var reg 1 ; _BUFF7_q_d1 $end
+$var reg 1 < cin_d1 $end
+$scope module BUFF10 $end
+$var wire 1 $ __event $end
+$var wire 1 : q $end
+$var wire 1 5 a $end
+$upscope $end
+$scope module BUFF11 $end
+$var wire 1 $ __event $end
+$var wire 1 9 q $end
+$var wire 1 4 a $end
+$upscope $end
+$scope module BUFF12 $end
+$var wire 1 $ __event $end
+$var wire 1 9 a $end
+$var wire 1 8 q $end
+$upscope $end
+$scope module BUFF6 $end
+$var wire 1 $ __event $end
+$var wire 1 7 q $end
+$var wire 1 1 a $end
+$upscope $end
+$scope module BUFF7 $end
+$var wire 1 $ __event $end
+$var wire 1 7 a $end
+$var wire 1 6 q $end
+$upscope $end
+$scope module BUFF9 $end
+$var wire 1 $ __event $end
+$var wire 1 5 q $end
+$var wire 1 0 a $end
+$upscope $end
+$scope module DFF4 $end
+$var wire 1 $ __event $end
+$var wire 1 < a $end
+$var wire 1 4 q $end
+$var wire 1 , clk $end
+$var reg 1 = a_reg $end
+$upscope $end
+$scope module DFF8 $end
+$var wire 1 $ __event $end
+$var wire 1 ; a $end
+$var wire 1 3 q $end
+$var wire 1 + clk $end
+$var reg 1 > a_reg $end
+$upscope $end
+$scope module HalfAdder13 $end
+$var wire 1 $ __event $end
+$var wire 1 : a $end
+$var wire 1 8 b $end
+$var wire 1 " s $end
+$var wire 1 * clk $end
+$var wire 1 2 c $end
+$var wire 1 ? _SPLIT3_q2 $end
+$var wire 1 @ _SPLIT3_q1 $end
+$var wire 1 A _SPLIT2_q2 $end
+$var wire 1 B _SPLIT2_q1 $end
+$var wire 1 C _SPLIT1_q2 $end
+$var wire 1 D _SPLIT1_q1 $end
+$var reg 1 E _SPLIT2_q1_d1 $end
+$var reg 1 F _SPLIT2_q2_d1 $end
+$var reg 1 G _SPLIT3_q1_d1 $end
+$var reg 1 H _SPLIT3_q2_d1 $end
+$scope module AND4 $end
+$var wire 1 $ __event $end
+$var wire 1 E a $end
+$var wire 1 G b $end
+$var wire 1 2 q $end
+$var wire 1 D clk $end
+$var reg 1 I a_reg $end
+$var reg 1 J b_reg $end
+$upscope $end
+$scope module SPLIT1 $end
+$var wire 1 $ __event $end
+$var wire 1 D q1 $end
+$var wire 1 C q2 $end
+$var wire 1 * a $end
+$upscope $end
+$scope module SPLIT2 $end
+$var wire 1 $ __event $end
+$var wire 1 : a $end
+$var wire 1 B q1 $end
+$var wire 1 A q2 $end
+$upscope $end
+$scope module SPLIT3 $end
+$var wire 1 $ __event $end
+$var wire 1 8 a $end
+$var wire 1 @ q1 $end
+$var wire 1 ? q2 $end
+$upscope $end
+$scope module XOR5 $end
+$var wire 1 $ __event $end
+$var wire 1 F a $end
+$var wire 1 H b $end
+$var wire 1 C clk $end
+$var wire 1 " q $end
+$var reg 1 K a_reg $end
+$var reg 1 L b_reg $end
+$upscope $end
+$upscope $end
+$scope module HalfAdder3 $end
+$var wire 1 $ __event $end
+$var wire 1 % a $end
+$var wire 1 & b $end
+$var wire 1 0 s $end
+$var wire 1 . clk $end
+$var wire 1 1 c $end
+$var wire 1 M _SPLIT3_q2 $end
+$var wire 1 N _SPLIT3_q1 $end
+$var wire 1 O _SPLIT2_q2 $end
+$var wire 1 P _SPLIT2_q1 $end
+$var wire 1 Q _SPLIT1_q2 $end
+$var wire 1 R _SPLIT1_q1 $end
+$var reg 1 S _SPLIT2_q1_d1 $end
+$var reg 1 T _SPLIT2_q2_d1 $end
+$var reg 1 U _SPLIT3_q1_d1 $end
+$var reg 1 V _SPLIT3_q2_d1 $end
+$scope module AND4 $end
+$var wire 1 $ __event $end
+$var wire 1 S a $end
+$var wire 1 U b $end
+$var wire 1 1 q $end
+$var wire 1 R clk $end
+$var reg 1 W a_reg $end
+$var reg 1 X b_reg $end
+$upscope $end
+$scope module SPLIT1 $end
+$var wire 1 $ __event $end
+$var wire 1 R q1 $end
+$var wire 1 Q q2 $end
+$var wire 1 . a $end
+$upscope $end
+$scope module SPLIT2 $end
+$var wire 1 $ __event $end
+$var wire 1 % a $end
+$var wire 1 P q1 $end
+$var wire 1 O q2 $end
+$upscope $end
+$scope module SPLIT3 $end
+$var wire 1 $ __event $end
+$var wire 1 & a $end
+$var wire 1 N q1 $end
+$var wire 1 M q2 $end
+$upscope $end
+$scope module XOR5 $end
+$var wire 1 $ __event $end
+$var wire 1 T a $end
+$var wire 1 V b $end
+$var wire 1 Q clk $end
+$var wire 1 0 q $end
+$var reg 1 Y a_reg $end
+$var reg 1 Z b_reg $end
+$upscope $end
+$upscope $end
+$scope module MERGE14 $end
+$var wire 1 $ __event $end
+$var wire 1 3 a $end
+$var wire 1 2 b $end
+$var wire 1 # q $end
+$upscope $end
+$scope module SPLIT1 $end
+$var wire 1 $ __event $end
+$var wire 1 ! a $end
+$var wire 1 / q1 $end
+$var wire 1 . q2 $end
+$upscope $end
+$scope module SPLIT2 $end
+$var wire 1 $ __event $end
+$var wire 1 / a $end
+$var wire 1 - q1 $end
+$var wire 1 , q2 $end
+$upscope $end
+$scope module SPLIT5 $end
+$var wire 1 $ __event $end
+$var wire 1 - a $end
+$var wire 1 + q1 $end
+$var wire 1 * q2 $end
+$upscope $end
+$upscope $end
+$upscope $end
+$enddefinitions $end
+$comment Show the parameter values. $end
+$dumpall
+$end
+#0
+$dumpvars
+0Z
+0Y
+0X
+0W
+0V
+0U
+0T
+0S
+1R
+1Q
+0P
+0O
+0N
+0M
+0L
+0K
+0J
+0I
+0H
+0G
+0F
+0E
+1D
+1C
+0B
+0A
+0@
+0?
+0>
+0=
+0<
+0;
+0:
+09
+08
+07
+06
+05
+04
+03
+02
+01
+00
+1/
+1.
+1-
+1,
+1+
+1*
+b0 )
+b0 (
+0'
+0&
+0%
+0$
+0#
+0"
+1!
+$end
+#1000
+b1 (
+b1 )
+1$
+#1500
+0$
+#2000
+1P
+1O
+1%
+b10 (
+b10 )
+1$
+#2500
+0$
+#3000
+1B
+1A
+1:
+15
+10
+1T
+1S
+1N
+1M
+1&
+0P
+0O
+0%
+b11 (
+b11 )
+1$
+#3500
+0$
+#4000
+1"
+1P
+1O
+1%
+1F
+1E
+1V
+1U
+0T
+0S
+b100 (
+b100 )
+1$
+#4500
+0$
+#5000
+0B
+0A
+0:
+05
+00
+16
+17
+11
+1T
+1S
+1'
+0N
+0M
+0&
+0P
+0O
+0%
+b101 (
+b101 )
+1$
+#5500
+0$
+#6000
+1#
+0"
+06
+07
+01
+1@
+1?
+18
+19
+14
+13
+1P
+1O
+1%
+1<
+1;
+0F
+0E
+0V
+0U
+0T
+0S
+b110 (
+b110 )
+1$
+#6500
+0$
+#7000
+1B
+1A
+1:
+15
+10
+1"
+0#
+03
+1T
+1S
+1H
+1G
+0;
+1N
+1M
+1&
+0P
+0O
+0%
+b111 (
+b111 )
+1$
+#7500
+0$
+#8000
+1#
+0"
+12
+1P
+1O
+1%
+1F
+1E
+1V
+1U
+0T
+0S
+b0 (
+b1000 )
+1$
+#8500
+0$
+#9000
+0B
+0A
+0:
+05
+00
+16
+17
+11
+1T
+1S
+0'
+0N
+0M
+0&
+0P
+0O
+0%
+b1 (
+b1001 )
+1$
+#9500
+0$
+#10000
+1"
+02
+06
+07
+01
+0@
+0?
+08
+09
+04
+13
+0<
+1;
+0F
+0E
+0V
+0U
+0T
+0S
+b10 (
+b1010 )
+1$
+#10500
+0$
+#11000
+0"
+0#
+03
+0H
+0G
+0;
+b11 (
+b1011 )
+1$
