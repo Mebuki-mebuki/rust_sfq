@@ -93,7 +93,7 @@ dependencies = [
 
 [[package]]
 name = "rust_sfq"
-version = "1.0.0-beta"
+version = "1.0.1-beta"
 dependencies = [
  "colored",
  "twox-hash",

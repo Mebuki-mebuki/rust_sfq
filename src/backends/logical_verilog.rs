@@ -100,7 +100,7 @@ impl Backend for LogicalVerilog {
         let m = &delayed_wire_names;
         for gate in c.gates().iter() {
             let s = match gate {
-                Gate::Jtl { name, a, q } => gate_string(c, m, name, vec![a], vec![q], "JTL"),
+                Gate::Jtl { name, a, q } => gate_string(c, m, name, vec![a], vec![q], "jtl"),
                 Gate::Split { name, a, q1, q2 } => {
                     gate_string(c, m, name, vec![a], vec![q1, q2], "split")
                 }
@@ -128,7 +128,7 @@ impl Backend for LogicalVerilog {
                 Gate::Ndro { name, a, b, clk, q } => {
                     gate_string(c, m, name, vec![a, b, clk], vec![q], "ndro")
                 }
-                Gate::Buff { name, a, q } => gate_string(c, m, name, vec![a], vec![q], "BUFF"),
+                Gate::Buff { name, a, q } => gate_string(c, m, name, vec![a], vec![q], "buff"),
                 Gate::ZeroAsync { name, q } => {
                     gate_string(c, m, name, vec![], vec![q], "zero_async")
                 }

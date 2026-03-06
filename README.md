@@ -74,3 +74,7 @@ rust_sfq = "0.1.3"
 ## Changelog
 
 See the [CHANGELOG](./CHANGELOG.md) for a list of updates and version history.
+
+## Third-party libraries
+
+RustSFQ includes a subset of the RSFQ cell library (<https://github.com/sunmagnetics/RSFQlib>) in `lib/rsfqlib`:

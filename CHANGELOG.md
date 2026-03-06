@@ -29,3 +29,9 @@ First release of RustSFQ
 ### Added
 
 - Added the `LogicalVerilog` backend for performing logic simulation in Verilog, along with the corresponding library `lib/logical`.
+
+## [1.0.1-beta] - 2026-03-06
+
+### Fixed
+
+- Fixed incorrect Verilog output formatting in the `RsfqlibVerilog` backend.
