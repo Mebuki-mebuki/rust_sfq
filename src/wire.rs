@@ -1,3 +1,4 @@
+use crate::circuit::Circuit;
 use crate::id::{CircuitID, WireID};
 use colored::Colorize;
 
@@ -50,13 +51,24 @@ impl Drop for WireKey {
 pub struct Wire(pub(crate) WireKey);
 pub struct CounterWire(pub(crate) WireKey);
 
-pub type TimedWire = (Wire, usize);
+pub type OrderedWire = (Wire, usize);
 
 // % 演算子でタイミングを記述する
 impl std::ops::Rem<usize> for Wire {
-    type Output = TimedWire;
+    type Output = OrderedWire;
 
     fn rem(self, rhs: usize) -> Self::Output {
         (self, rhs)
+    }
+}
+
+impl Wire {
+    pub fn label<const N_I: usize, const N_CI: usize, const N_O: usize, const N_CO: usize>(
+        self,
+        label: &str,
+        circuit: &mut Circuit<N_I, N_CI, N_O, N_CO>,
+    ) -> Self {
+        circuit.label(&self, label);
+        self
     }
 }

@@ -107,27 +107,27 @@ impl Backend for LogicalVerilog {
                 Gate::Merge { name, a, b, q } => {
                     gate_string(c, m, name, vec![a, b], vec![q], "merge")
                 }
-                Gate::And { name, a, b, clk, q } => {
-                    gate_string(c, m, name, vec![a, b, clk], vec![q], "and")
-                }
-                Gate::Or { name, a, b, clk, q } => {
-                    gate_string(c, m, name, vec![a, b, clk], vec![q], "or")
-                }
-                Gate::Xor { name, a, b, clk, q } => {
-                    gate_string(c, m, name, vec![a, b, clk], vec![q], "xor")
-                }
-                Gate::Xnor { name, a, b, clk, q } => {
-                    gate_string(c, m, name, vec![a, b, clk], vec![q], "xnor")
-                }
-                Gate::Not { name, a, clk, q } => {
-                    gate_string(c, m, name, vec![a, clk], vec![q], "not")
-                }
-                Gate::Dff { name, a, clk, q } => {
-                    gate_string(c, m, name, vec![a, clk], vec![q], "dff")
-                }
-                Gate::Ndro { name, a, b, clk, q } => {
-                    gate_string(c, m, name, vec![a, b, clk], vec![q], "ndro")
-                }
+                Gate::And {
+                    name, a, b, clk, q, ..
+                } => gate_string(c, m, name, vec![a, b, clk], vec![q], "and"),
+                Gate::Or {
+                    name, a, b, clk, q, ..
+                } => gate_string(c, m, name, vec![a, b, clk], vec![q], "or"),
+                Gate::Xor {
+                    name, a, b, clk, q, ..
+                } => gate_string(c, m, name, vec![a, b, clk], vec![q], "xor"),
+                Gate::Xnor {
+                    name, a, b, clk, q, ..
+                } => gate_string(c, m, name, vec![a, b, clk], vec![q], "xnor"),
+                Gate::Not {
+                    name, a, clk, q, ..
+                } => gate_string(c, m, name, vec![a, clk], vec![q], "not"),
+                Gate::Dff {
+                    name, a, clk, q, ..
+                } => gate_string(c, m, name, vec![a, clk], vec![q], "dff"),
+                Gate::Ndro {
+                    name, a, b, clk, q, ..
+                } => gate_string(c, m, name, vec![a, b, clk], vec![q], "ndro"),
                 Gate::Buff { name, a, q } => gate_string(c, m, name, vec![a], vec![q], "buff"),
                 Gate::ZeroAsync { name, q } => {
                     gate_string(c, m, name, vec![], vec![q], "zero_async")

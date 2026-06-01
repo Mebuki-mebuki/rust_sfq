@@ -25,6 +25,7 @@ pub(crate) enum Gate {
         b: WireID,
         clk: WireID,
         q: WireID,
+        order: Vec<usize>,
     },
     Or {
         name: String,
@@ -32,6 +33,7 @@ pub(crate) enum Gate {
         b: WireID,
         clk: WireID,
         q: WireID,
+        order: Vec<usize>,
     },
     Xor {
         name: String,
@@ -39,12 +41,14 @@ pub(crate) enum Gate {
         b: WireID,
         clk: WireID,
         q: WireID,
+        order: Vec<usize>,
     },
     Not {
         name: String,
         a: WireID,
         clk: WireID,
         q: WireID,
+        order: Vec<usize>,
     },
     Xnor {
         name: String,
@@ -52,12 +56,14 @@ pub(crate) enum Gate {
         b: WireID,
         clk: WireID,
         q: WireID,
+        order: Vec<usize>,
     },
     Dff {
         name: String,
         a: WireID,
         clk: WireID,
         q: WireID,
+        order: Vec<usize>,
     },
     Ndro {
         name: String,
@@ -65,6 +71,7 @@ pub(crate) enum Gate {
         b: WireID,
         clk: WireID,
         q: WireID,
+        order: Vec<usize>,
     },
     Buff {
         name: String,

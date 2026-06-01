@@ -4,7 +4,7 @@ use twox_hash::XxHash32;
 
 use crate::gate::Gate;
 use crate::id::{CircuitID, WireID};
-use crate::wire::{CounterWire, TimedWire, Wire, WireInfo, WireKey};
+use crate::wire::{CounterWire, OrderedWire, Wire, WireInfo, WireKey};
 
 pub struct Circuit<const N_I: usize, const N_CI: usize, const N_O: usize, const N_CO: usize> {
     id: CircuitID,
@@ -99,10 +99,45 @@ impl<const N_I: usize, const N_CI: usize, const N_O: usize, const N_CO: usize>
     }
 }
 
-// 1出力ゲート関数定義用マクロ (関数名, Enumバリアント名, 引数Wireリスト)
-macro_rules! define_gate_fn {
-    ($fn_name:ident, $fn_name_labeled:ident, $variant:ident, [$($arg:ident),*]) => {
-        pub fn $fn_name(&mut self, $($arg:TimedWire),*) -> Wire {
+// 1出力クロック付きゲート関数定義用マクロ (関数名, Enumバリアント名, 引数Wireリスト)
+macro_rules! define_clocked_gate_fn {
+    ($fn_name:ident, $variant:ident, [$($arg:ident),*]) => {
+        pub fn $fn_name(&mut self, $($arg:OrderedWire),*) -> Wire {
+            let mut order = Vec::new();
+            // 入力 Wire のチェック, receive
+            $(
+                let ($arg, n) = self.process_ordered_input($arg);
+                order.push(n);
+            )*
+            // ゲート名, 出力 Wire の生成, drive
+            let gate_name = format!("{}{}", stringify!($fn_name).to_uppercase(), self.generate_gate_id());
+            let q_name = format!("_{}_q", gate_name);
+            let q_key = self.generate_wire(q_name);
+
+            // ゲートの作成, 追加
+            let gate = Gate::$variant {
+                name: gate_name,
+                $( $arg, )*
+                q: q_key.id,
+                order,
+            };
+            self.gates.push(gate);
+
+            return Wire(q_key);
+        }
+
+        // pub fn $fn_name_labeled (&mut self, $($arg: OrderedWire,)* label: &str) -> Wire {
+        //     let wire = self.$fn_name($($arg),*);
+        //     self.label(&wire, label);
+        //     return wire;
+        // }
+    };
+}
+
+// 1出力クロックなしゲート関数定義用マクロ (関数名, Enumバリアント名, 引数Wireリスト)
+macro_rules! define_clockless_gate_fn {
+    ($fn_name:ident, $variant:ident, [$($arg:ident),*]) => {
+        pub fn $fn_name(&mut self, $($arg:Wire),*) -> Wire {
             // 入力 Wire のチェック, receive
             $(
                 let $arg = self.process_input($arg);
@@ -121,12 +156,6 @@ macro_rules! define_gate_fn {
             self.gates.push(gate);
 
             return Wire(q_key);
-        }
-
-        pub fn $fn_name_labeled (&mut self, $($arg: TimedWire,)* label: &str) -> Wire {
-            let wire = self.$fn_name($($arg),*);
-            self.label(&wire, label);
-            return wire;
         }
     };
 }
@@ -232,20 +261,23 @@ impl<const N_I: usize, const N_CI: usize, const N_O: usize, const N_CO: usize>
 
     //-------------------- Gate Functions ----------------------//
 
-    // 入力チェック, consume, delay 設定
-    pub(crate) fn process_input(&mut self, a: TimedWire) -> WireID {
-        let a_delay = a.1;
+    // 入力チェック, consume
+    pub(crate) fn process_ordered_input(&mut self, a: OrderedWire) -> (WireID, usize) {
+        let a_order = a.1;
         let mut a_key = a.0.0;
 
         self.assert_circuit_id(a_key.cid);
         a_key.consume();
-        self.wires
-            .entry(a_key.id)
-            .and_modify(|info| info.delay = a_delay);
+        return (a_key.id, a_order);
+    }
+    pub(crate) fn process_input(&mut self, a: Wire) -> WireID {
+        let mut a_key = a.0;
+
+        self.assert_circuit_id(a_key.cid);
+        a_key.consume();
 
         return a_key.id;
     }
-    // CounterWire は delay = 0 で固定
     pub(crate) fn process_counter_input(&mut self, a: CounterWire) -> WireID {
         let mut a_key = a.0;
 
@@ -255,19 +287,20 @@ impl<const N_I: usize, const N_CI: usize, const N_O: usize, const N_CO: usize>
         return a_key.id;
     }
 
-    define_gate_fn!(jtl, jtl_labeled, Jtl, [a]);
-    define_gate_fn!(merge, merge_labeled, Merge, [a, b]);
-    define_gate_fn!(and, and_labeled, And, [a, b, clk]);
-    define_gate_fn!(or, or_labeled, Or, [a, b, clk]);
-    define_gate_fn!(xor, xor_labeled, Xor, [a, b, clk]);
-    define_gate_fn!(not, not_labeled, Not, [a, clk]);
-    define_gate_fn!(xnor, xnor_labeled, Xnor, [a, b, clk]);
-    define_gate_fn!(dff, dff_labeled, Dff, [a, clk]);
-    define_gate_fn!(ndro, ndro_labeled, Ndro, [a, b, clk]);
-    define_gate_fn!(buff, buff_labeled, Buff, [a]);
-    define_gate_fn!(zero_async, zero_async_labeled, ZeroAsync, []);
+    define_clocked_gate_fn!(and, And, [a, b, clk]);
+    define_clocked_gate_fn!(or, Or, [a, b, clk]);
+    define_clocked_gate_fn!(xor, Xor, [a, b, clk]);
+    define_clocked_gate_fn!(not, Not, [a, clk]);
+    define_clocked_gate_fn!(xnor, Xnor, [a, b, clk]);
+    define_clocked_gate_fn!(dff, Dff, [a, clk]);
+    define_clocked_gate_fn!(ndro, Ndro, [a, b, clk]);
 
-    pub fn split(&mut self, a: TimedWire) -> (Wire, Wire) {
+    define_clockless_gate_fn!(jtl, Jtl, [a]);
+    define_clockless_gate_fn!(buff, Buff, [a]);
+    define_clockless_gate_fn!(merge, Merge, [a, b]);
+    define_clockless_gate_fn!(zero_async, ZeroAsync, []);
+
+    pub fn split(&mut self, a: Wire) -> (Wire, Wire) {
         let a_id = self.process_input(a);
 
         // ゲート名, 出力 Wire の生成
@@ -289,14 +322,7 @@ impl<const N_I: usize, const N_CI: usize, const N_O: usize, const N_CO: usize>
         return (Wire(q1_key), Wire(q2_key));
     }
 
-    pub fn split_labeled(&mut self, a: TimedWire, label1: &str, label2: &str) -> (Wire, Wire) {
-        let (wire1, wire2) = self.split(a);
-        self.label(&wire1, label1);
-        self.label(&wire2, label2);
-        return (wire1, wire2);
-    }
-
-    pub fn terminate(&mut self, a: TimedWire) {
+    pub fn terminate(&mut self, a: Wire) {
         let a_id = self.process_input(a);
 
         let gate_name = format!("TERMINATE{}", self.generate_gate_id());
@@ -326,12 +352,6 @@ impl<const N_I: usize, const N_CI: usize, const N_O: usize, const N_CO: usize>
         return CounterWire(a_key);
     }
 
-    pub fn cbuff_labeled(&mut self, q: CounterWire, label: &str) -> CounterWire {
-        let cwire = self.cbuff(q);
-        self.clabel(&cwire, label);
-        return cwire;
-    }
-
     // q1(CounterWire)を受けとりq2(Wire)とa(CounterWire)を返す
     pub fn csplit(&mut self, q1: CounterWire) -> (Wire, CounterWire) {
         let q1_id = self.process_counter_input(q1);
@@ -351,18 +371,6 @@ impl<const N_I: usize, const N_CI: usize, const N_O: usize, const N_CO: usize>
         self.gates.push(gate);
 
         return (Wire(q2_key), CounterWire(a_key));
-    }
-
-    pub fn csplit_labeled(
-        &mut self,
-        q1: CounterWire,
-        label_q2: &str,
-        label_a: &str,
-    ) -> (Wire, CounterWire) {
-        let (q2, a) = self.csplit(q1);
-        self.label(&q2, label_q2);
-        self.clabel(&a, label_a);
-        return (q2, a);
     }
 
     // q1, q2(CounterWire)を受け取りa(CounterWire)を返す
@@ -386,17 +394,6 @@ impl<const N_I: usize, const N_CI: usize, const N_O: usize, const N_CO: usize>
         return CounterWire(a_key);
     }
 
-    pub fn csplit2_labeled(
-        &mut self,
-        q1: CounterWire,
-        q2: CounterWire,
-        label: &str,
-    ) -> CounterWire {
-        let cwire = self.csplit2(q1, q2);
-        self.clabel(&cwire, label);
-        return cwire;
-    }
-
     pub fn cterminate(&mut self) -> CounterWire {
         let gate_name = format!("TERMINATE{}", self.generate_gate_id());
         let a_name = format!("_{}_a", gate_name);
@@ -411,20 +408,14 @@ impl<const N_I: usize, const N_CI: usize, const N_O: usize, const N_CO: usize>
         return CounterWire(a_key);
     }
 
-    pub fn cterminate_labeled(&mut self, label: &str) -> CounterWire {
-        let cwire = self.cterminate();
-        self.clabel(&cwire, label);
-        return cwire;
-    }
-
     pub fn subcircuit<const M_I: usize, const M_CI: usize, const M_O: usize, const M_CO: usize>(
         &mut self,
         circuit: &Circuit<M_I, M_CI, M_O, M_CO>,
-        inputs: [TimedWire; M_I],
+        inputs: [Wire; M_I],
         counter_inputs: [CounterWire; M_CI],
     ) -> ([Wire; M_O], [CounterWire; M_CO]) {
         // 入力Wireの処理
-        let input_ids: Vec<WireID> = inputs.map(|tw| self.process_input(tw)).to_vec();
+        let input_ids: Vec<WireID> = inputs.map(|w| self.process_input(w)).to_vec();
         let counter_input_ids: Vec<WireID> = counter_inputs
             .map(|cw| self.process_counter_input(cw))
             .to_vec();

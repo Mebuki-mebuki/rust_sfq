@@ -60,13 +60,27 @@ impl Backend for RsfqlibVerilog {
                 Gate::Jtl { name, a, q } => gate_string!(c, name, [a, q], "JTL"),
                 Gate::Split { name, a, q1, q2 } => gate_string!(c, name, [a, q1, q2], "SPLIT"),
                 Gate::Merge { name, a, b, q } => gate_string!(c, name, [a, b, q], "MERGE"),
-                Gate::And { name, a, b, clk, q } => gate_string!(c, name, [a, b, clk, q], "AND2"),
-                Gate::Or { name, a, b, clk, q } => gate_string!(c, name, [a, b, clk, q], "OR2"),
-                Gate::Xor { name, a, b, clk, q } => gate_string!(c, name, [a, b, clk, q], "XOR"),
-                Gate::Xnor { name, a, b, clk, q } => gate_string!(c, name, [a, b, clk, q], "XNOR"),
-                Gate::Not { name, a, clk, q } => gate_string!(c, name, [a, clk, q], "NOT"),
-                Gate::Dff { name, a, clk, q } => gate_string!(c, name, [a, clk, q], "DFF"),
-                Gate::Ndro { name, a, b, clk, q } => gate_string!(c, name, [a, b, clk, q], "NDRO"),
+                Gate::And {
+                    name, a, b, clk, q, ..
+                } => gate_string!(c, name, [a, b, clk, q], "AND2"),
+                Gate::Or {
+                    name, a, b, clk, q, ..
+                } => gate_string!(c, name, [a, b, clk, q], "OR2"),
+                Gate::Xor {
+                    name, a, b, clk, q, ..
+                } => gate_string!(c, name, [a, b, clk, q], "XOR"),
+                Gate::Xnor {
+                    name, a, b, clk, q, ..
+                } => gate_string!(c, name, [a, b, clk, q], "XNOR"),
+                Gate::Not {
+                    name, a, clk, q, ..
+                } => gate_string!(c, name, [a, clk, q], "NOT"),
+                Gate::Dff {
+                    name, a, clk, q, ..
+                } => gate_string!(c, name, [a, clk, q], "DFF"),
+                Gate::Ndro {
+                    name, a, b, clk, q, ..
+                } => gate_string!(c, name, [a, b, clk, q], "NDRO"),
                 Gate::Buff { name, a, q } => gate_string!(c, name, [a, q], "BUFF"),
                 Gate::ZeroAsync { name, q } => format!(
                     "THmitll_ALWAYS0_ASYNC_NOA {} ({});",
