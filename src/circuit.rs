@@ -160,6 +160,15 @@ macro_rules! define_clockless_gate_fn {
     };
 }
 
+// パイプライン化ゲート関数定義用マクロ (パイプライン関数名, 元の関数名, 引数Wireリスト(clkは除く))
+macro_rules! define_pipelined_gate_fn {
+    ($fn_name_p:ident, $fn_name:ident, [$($arg:ident),*]) => {
+        pub fn $fn_name_p(&mut self, $($arg:Wire),*, clk: Wire) -> Wire {
+            self.$fn_name($($arg % 1),*, clk % 0)
+        }
+    };
+}
+
 impl<const N_I: usize, const N_CI: usize, const N_O: usize, const N_CO: usize>
     Circuit<N_I, N_CI, N_O, N_CO>
 {
@@ -294,6 +303,13 @@ impl<const N_I: usize, const N_CI: usize, const N_O: usize, const N_CO: usize>
     define_clocked_gate_fn!(xnor, Xnor, [a, b, clk]);
     define_clocked_gate_fn!(dff, Dff, [a, clk]);
     define_clocked_gate_fn!(ndro, Ndro, [a, b, clk]);
+
+    define_pipelined_gate_fn!(and_p, and, [a, b]);
+    define_pipelined_gate_fn!(or_p, or, [a, b]);
+    define_pipelined_gate_fn!(xor_p, xor, [a, b]);
+    define_pipelined_gate_fn!(not_p, not, [a]);
+    define_pipelined_gate_fn!(xnor_p, xnor, [a, b]);
+    define_pipelined_gate_fn!(dff_p, dff, [a]);
 
     define_clockless_gate_fn!(jtl, Jtl, [a]);
     define_clockless_gate_fn!(buff, Buff, [a]);
