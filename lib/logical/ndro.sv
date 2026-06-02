@@ -3,7 +3,7 @@ module rustsfq_ndro (
     input  wire  b,
     input  wire  clk,
     output logic q,
-    input  wire  __event
+    input  wire  __cycle
 );
   logic change, next;
   reg state = 1'b0;
@@ -29,7 +29,7 @@ module rustsfq_ndro (
     end
   end
 
-  always_ff @(posedge __event) begin
+  always_ff @(posedge __cycle) begin
     if (change) begin
       state <= next;
     end
