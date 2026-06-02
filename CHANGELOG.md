@@ -35,3 +35,22 @@ First release of RustSFQ
 ### Fixed
 
 - Fixed incorrect Verilog output formatting in the `RsfqlibVerilog` backend.
+
+## [1.0.2-beta] - 2026-06-02
+
+### Changed
+
+- Changed the meaning of timing annotations.
+  - For clocked gates, they represent the arrival order of pulses at that gate.
+  - For non-clocked gates and subcircuits, there is no annotation.
+  - Multi-cycle paths are expressed using `Circuit::add_delay()`.
+
+- Added APIs like `and_p()` to represent typical pipeline timing.
+  - example: the following two are equivalent.
+    - `circuit.and_p(a, b, clk)`
+    - `circuit.and(a % 1, b % 1, clk % 0)`
+
+- Removed labeled APIs such as `and_labeled()`. Added `Wire::label()` instead.
+  - example:
+    - old: `let c = circuit.and_labeled(a1 % 1, b1 % 1, clk1 % 0, "c");`
+    - new: `let c = circuit.and(a1 % 1, b1 % 1, clk1 % 0).label("c", &mut circuit);`
