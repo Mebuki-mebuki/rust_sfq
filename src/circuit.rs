@@ -3,7 +3,7 @@ use std::collections::HashMap;
 use twox_hash::XxHash32;
 
 use crate::gate::Gate;
-use crate::id::{CircuitID, WireID};
+use crate::id::{CircuitID, OrderedWireID, WireID};
 use crate::wire::{CounterWire, OrderedWire, Wire, WireInfo, WireKey};
 
 pub struct Circuit<const N_I: usize, const N_CI: usize, const N_O: usize, const N_CO: usize> {
@@ -103,11 +103,9 @@ impl<const N_I: usize, const N_CI: usize, const N_O: usize, const N_CO: usize>
 macro_rules! define_clocked_gate_fn {
     ($fn_name:ident, $variant:ident, [$($arg:ident),*]) => {
         pub fn $fn_name(&mut self, $($arg:OrderedWire),*) -> Wire {
-            let mut order = Vec::new();
             // 入力 Wire のチェック, receive
             $(
-                let ($arg, n) = self.process_ordered_input($arg);
-                order.push(n);
+                let $arg = self.process_ordered_input($arg);
             )*
             // ゲート名, 出力 Wire の生成, drive
             let gate_name = format!("{}{}", stringify!($fn_name).to_uppercase(), self.generate_gate_id());
@@ -119,7 +117,6 @@ macro_rules! define_clocked_gate_fn {
                 name: gate_name,
                 $( $arg, )*
                 q: q_key.id,
-                order,
             };
             self.gates.push(gate);
 
@@ -268,16 +265,26 @@ impl<const N_I: usize, const N_CI: usize, const N_O: usize, const N_CO: usize>
         self.label_common(cwire.0.id, name);
     }
 
+    pub fn add_delay(&mut self, wire: &Wire, delay: usize) {
+        self.assert_circuit_id(wire.0.cid);
+        self.wires
+            .entry(wire.0.id)
+            .and_modify(|info| info.delay += delay);
+    }
+
     //-------------------- Gate Functions ----------------------//
 
     // 入力チェック, consume
-    pub(crate) fn process_ordered_input(&mut self, a: OrderedWire) -> (WireID, usize) {
+    pub(crate) fn process_ordered_input(&mut self, a: OrderedWire) -> OrderedWireID {
         let a_order = a.1;
         let mut a_key = a.0.0;
 
         self.assert_circuit_id(a_key.cid);
         a_key.consume();
-        return (a_key.id, a_order);
+        return OrderedWireID {
+            id: a_key.id,
+            order: a_order,
+        };
     }
     pub(crate) fn process_input(&mut self, a: Wire) -> WireID {
         let mut a_key = a.0;
@@ -504,8 +511,8 @@ impl<const N_I: usize, const N_CI: usize, const N_O: usize, const N_CO: usize>
             name2
         };
 
-        // delay は receive 時に決まるので, already received の CounterWire の方を使用
-        let delay = info2.delay;
+        // delay は合計する
+        let delay = info1.delay + info2.delay;
 
         // id の小さい方を代表にする
         let (prime_id, sub_id) = if key.id.0 < ckey.id.0 {

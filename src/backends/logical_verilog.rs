@@ -1,11 +1,23 @@
-use std::collections::{BTreeSet, HashMap};
-
 use super::Backend;
 use crate::circuit::Circuit;
 use crate::gate::Gate;
 use crate::id::WireID;
+use colored::Colorize;
+use std::collections::{BTreeSet, HashMap};
 
 pub struct LogicalVerilog;
+
+fn assert_data_clock_ordering(data: usize, clk: usize, gate: &str) {
+    assert!(
+        data != clk,
+        "{}",
+        format!(
+            "Data and clock wires cannot have the same order (gate: {})",
+            gate
+        )
+        .red()
+    );
+}
 
 // ワイヤ名から遅延付きワイヤ名を生成する
 fn delayed_name(name: &str, delay: usize) -> String {
@@ -30,8 +42,57 @@ fn gate_string<const N_I: usize, const N_CI: usize, const N_O: usize, const N_CO
     // 出力は遅延なし
     ports.extend(outputs.iter().map(|id| c.get_resolved_wire_name(**id)));
     // イベント
-    ports.push("__event");
+    ports.push("__cycle");
     format!("rustsfq_{} {} ({});", gate, name, ports.join(", "))
+}
+
+// ゲート内のローカルな順番とサイクル間の遅延から必要なregの数を計算する.
+fn calc_inserted_reg<const N_I: usize, const N_CI: usize, const N_O: usize, const N_CO: usize>(
+    c: &Circuit<N_I, N_CI, N_O, N_CO>,
+) -> HashMap<&WireID, usize> {
+    let mut map = HashMap::new();
+
+    // サイクル間の遅延数を初期値としてセット
+    for (id, info) in c.wires() {
+        map.insert(id, info.delay);
+    }
+    for gate in c.gates().iter() {
+        let ins_clk_name = match gate {
+            Gate::And {
+                a, b, clk, name, ..
+            } => Some((vec![a, b], clk, name)),
+            Gate::Or {
+                a, b, clk, name, ..
+            } => Some((vec![a, b], clk, name)),
+            Gate::Xor {
+                a, b, clk, name, ..
+            } => Some((vec![a, b], clk, name)),
+            Gate::Not { a, clk, name, .. } => Some((vec![a], clk, name)),
+            Gate::Xnor {
+                a, b, clk, name, ..
+            } => Some((vec![a, b], clk, name)),
+            Gate::Dff { a, clk, name, .. } => Some((vec![a], clk, name)),
+            Gate::Ndro {
+                a, b, clk, name, ..
+            } => Some((vec![a, b], clk, name)),
+            _ => None,
+        };
+        if let Some((ins, &clk, name)) = ins_clk_name {
+            for &&id_order in ins.iter() {
+                let id = c.resolved_wire_id(id_order.id);
+                let order = id_order.order;
+                assert_data_clock_ordering(order, clk.order, name);
+
+                if order > clk.order {
+                    // データの方が遅い場合は, パイプライン動作になるので reg を追加
+                    if let Some(count) = map.get_mut(&id) {
+                        *count += 1;
+                    }
+                }
+            }
+        };
+    }
+    map
 }
 
 impl Backend for LogicalVerilog {
@@ -42,10 +103,10 @@ impl Backend for LogicalVerilog {
 
         /* ------------------- header ------------------- */
         let mut in_ports: Vec<&str> = c.in_ports();
-        in_ports.push("__event");
+        in_ports.push("__cycle");
         let out_ports: Vec<&str> = c.out_ports();
         let mut ports: Vec<&str> = c.all_ports();
-        ports.push("__event");
+        ports.push("__cycle");
         res.push(format!("module {} ({});", c.name(), ports.join(", ")));
         if in_ports.len() > 0 {
             res.push(format!("input {};", in_ports.join(", ")));
@@ -65,21 +126,23 @@ impl Backend for LogicalVerilog {
             res.push(format!("wire {};", wires.join(", ")));
         }
 
-        // delay の分だけ reg を追加し, 最後の段を参照する HashMap を作成.
+        // reg の数を計算して追加し, 最後の段を参照する HashMap を作成.
         // 後でブロッキング代入で接続する.
         let mut regs = BTreeSet::new();
         let mut delayed_wire_names = HashMap::new();
         let mut assignments = Vec::new();
 
-        for (id, info) in c.wires().iter() {
-            let delay = info.delay;
+        let inserted_regs = calc_inserted_reg(c);
 
-            if delay == 0 {
+        for (id, info) in c.wires().iter() {
+            let reg_count = inserted_regs[&id];
+
+            if reg_count == 0 {
                 delayed_wire_names.insert(id, info.name.clone());
                 continue;
             }
             let mut prev_name = &info.name;
-            for d in 1..=delay {
+            for d in 1..=reg_count {
                 let dname = delayed_name(&info.name, d);
                 assignments.push(format!("{} <= {};", dname, prev_name));
 
@@ -87,7 +150,7 @@ impl Backend for LogicalVerilog {
                 regs.insert(format!("{} = 1'b0", dname));
                 prev_name = regs.last().unwrap();
             }
-            delayed_wire_names.insert(id, delayed_name(&info.name, delay));
+            delayed_wire_names.insert(id, delayed_name(&info.name, reg_count));
         }
         if regs.len() > 0 {
             res.push(format!(
@@ -109,25 +172,25 @@ impl Backend for LogicalVerilog {
                 }
                 Gate::And {
                     name, a, b, clk, q, ..
-                } => gate_string(c, m, name, vec![a, b, clk], vec![q], "and"),
+                } => gate_string(c, m, name, vec![&a.id, &b.id, &clk.id], vec![q], "and"),
                 Gate::Or {
                     name, a, b, clk, q, ..
-                } => gate_string(c, m, name, vec![a, b, clk], vec![q], "or"),
+                } => gate_string(c, m, name, vec![&a.id, &b.id, &clk.id], vec![q], "or"),
                 Gate::Xor {
                     name, a, b, clk, q, ..
-                } => gate_string(c, m, name, vec![a, b, clk], vec![q], "xor"),
+                } => gate_string(c, m, name, vec![&a.id, &b.id, &clk.id], vec![q], "xor"),
                 Gate::Xnor {
                     name, a, b, clk, q, ..
-                } => gate_string(c, m, name, vec![a, b, clk], vec![q], "xnor"),
+                } => gate_string(c, m, name, vec![&a.id, &b.id, &clk.id], vec![q], "xnor"),
                 Gate::Not {
                     name, a, clk, q, ..
-                } => gate_string(c, m, name, vec![a, clk], vec![q], "not"),
+                } => gate_string(c, m, name, vec![&a.id, &clk.id], vec![q], "not"),
                 Gate::Dff {
                     name, a, clk, q, ..
-                } => gate_string(c, m, name, vec![a, clk], vec![q], "dff"),
+                } => gate_string(c, m, name, vec![&a.id, &clk.id], vec![q], "dff"),
                 Gate::Ndro {
                     name, a, b, clk, q, ..
-                } => gate_string(c, m, name, vec![a, b, clk], vec![q], "ndro"),
+                } => gate_string(c, m, name, vec![&a.id, &b.id, &clk.id], vec![q], "ndro"),
                 Gate::Buff { name, a, q } => gate_string(c, m, name, vec![a], vec![q], "buff"),
                 Gate::ZeroAsync { name, q } => {
                     gate_string(c, m, name, vec![], vec![q], "zero_async")
@@ -145,7 +208,7 @@ impl Backend for LogicalVerilog {
                     // 出力は遅延なし
                     ports.extend(outputs.iter().map(|id| c.get_resolved_wire_name(*id)));
                     // イベント
-                    ports.push("__event");
+                    ports.push("__cycle");
                     format!("{} {} ({});", circuit, name, ports.join(", "))
                 }
                 _ => panic!("Unsupported Gate"),
@@ -154,7 +217,7 @@ impl Backend for LogicalVerilog {
         }
 
         if assignments.len() > 0 {
-            res.push("always @(posedge __event) begin".to_string());
+            res.push("always @(posedge __cycle) begin".to_string());
             res.push(assignments.join(" "));
             res.push("end".to_string());
         }

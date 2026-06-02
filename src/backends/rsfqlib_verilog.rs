@@ -17,9 +17,9 @@ fn warn_timing_ignored() {
 
 //  (circuit, gate名, 引数WireIDリスト, ゲート名)
 macro_rules! gate_string {
-    ($c:ident, $name:ident, [$($arg:ident),*], $gate:expr) => {
+    ($c:ident, $name:ident, [$($arg:expr),*], $gate:expr) => {
         format!("THmitll_{}_v3p0_extracted {} ({});", $gate, $name,
-            vec![ $($c.get_resolved_wire_name(*$arg), )*].join(", ")
+            vec![ $($c.get_resolved_wire_name($arg), )*].join(", ")
         )
     };
 }
@@ -57,31 +57,31 @@ impl Backend for RsfqlibVerilog {
         /* ------------------- body ------------------- */
         for gate in c.gates().iter() {
             let s = match gate {
-                Gate::Jtl { name, a, q } => gate_string!(c, name, [a, q], "JTL"),
-                Gate::Split { name, a, q1, q2 } => gate_string!(c, name, [a, q1, q2], "SPLIT"),
-                Gate::Merge { name, a, b, q } => gate_string!(c, name, [a, b, q], "MERGE"),
+                Gate::Jtl { name, a, q } => gate_string!(c, name, [*a, *q], "JTL"),
+                Gate::Split { name, a, q1, q2 } => gate_string!(c, name, [*a, *q1, *q2], "SPLIT"),
+                Gate::Merge { name, a, b, q } => gate_string!(c, name, [*a, *b, *q], "MERGE"),
                 Gate::And {
                     name, a, b, clk, q, ..
-                } => gate_string!(c, name, [a, b, clk, q], "AND2"),
+                } => gate_string!(c, name, [a.id, b.id, clk.id, *q], "AND2"),
                 Gate::Or {
                     name, a, b, clk, q, ..
-                } => gate_string!(c, name, [a, b, clk, q], "OR2"),
+                } => gate_string!(c, name, [a.id, b.id, clk.id, *q], "OR2"),
                 Gate::Xor {
                     name, a, b, clk, q, ..
-                } => gate_string!(c, name, [a, b, clk, q], "XOR"),
+                } => gate_string!(c, name, [a.id, b.id, clk.id, *q], "XOR"),
                 Gate::Xnor {
                     name, a, b, clk, q, ..
-                } => gate_string!(c, name, [a, b, clk, q], "XNOR"),
+                } => gate_string!(c, name, [a.id, b.id, clk.id, *q], "XNOR"),
                 Gate::Not {
                     name, a, clk, q, ..
-                } => gate_string!(c, name, [a, clk, q], "NOT"),
+                } => gate_string!(c, name, [a.id, clk.id, *q], "NOT"),
                 Gate::Dff {
                     name, a, clk, q, ..
-                } => gate_string!(c, name, [a, clk, q], "DFF"),
+                } => gate_string!(c, name, [a.id, clk.id, *q], "DFF"),
                 Gate::Ndro {
                     name, a, b, clk, q, ..
-                } => gate_string!(c, name, [a, b, clk, q], "NDRO"),
-                Gate::Buff { name, a, q } => gate_string!(c, name, [a, q], "BUFF"),
+                } => gate_string!(c, name, [a.id, b.id, clk.id, *q], "NDRO"),
+                Gate::Buff { name, a, q } => gate_string!(c, name, [*a, *q], "BUFF"),
                 Gate::ZeroAsync { name, q } => format!(
                     "THmitll_ALWAYS0_ASYNC_NOA {} ({});",
                     name,
