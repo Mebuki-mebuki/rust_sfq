@@ -36,7 +36,7 @@ uv run josim-plot2.py fulladder.csv -t stacked
 ```shell
 cd verilog
 cargo run verilog > modules.v
-iverilog -g2012 -s top -I ../../../lib/rsfqlib/ fulladder.sv
+iverilog -g2012 -s top -I ../../../lib/rsfqlib/verilog/ fulladder.sv
 ./a.out
 gtkwave fulladder.vcd
 ```

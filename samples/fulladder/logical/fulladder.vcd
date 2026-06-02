@@ -1,5 +1,5 @@
 $date
-	Fri Mar  6 15:58:02 2026
+	Tue Jun  2 14:02:00 2026
 $end
 $version
 	Icarus Verilog
@@ -11,14 +11,14 @@ $scope module top $end
 $var wire 1 ! clk $end
 $var wire 1 " s $end
 $var wire 1 # cout $end
-$var reg 1 $ __event $end
+$var reg 1 $ __cycle $end
 $var reg 1 % a $end
 $var reg 1 & b $end
 $var reg 1 ' cin $end
 $var integer 32 ( i [31:0] $end
 $var integer 32 ) step [31:0] $end
 $scope module dut $end
-$var wire 1 $ __event $end
+$var wire 1 $ __cycle $end
 $var wire 1 % a $end
 $var wire 1 & b $end
 $var wire 1 ' cin $end
@@ -45,51 +45,51 @@ $var wire 1 : _BUFF10_q $end
 $var reg 1 ; _BUFF7_q_d1 $end
 $var reg 1 < cin_d1 $end
 $scope module BUFF10 $end
-$var wire 1 $ __event $end
+$var wire 1 $ __cycle $end
 $var wire 1 : q $end
 $var wire 1 5 a $end
 $upscope $end
 $scope module BUFF11 $end
-$var wire 1 $ __event $end
+$var wire 1 $ __cycle $end
 $var wire 1 9 q $end
 $var wire 1 4 a $end
 $upscope $end
 $scope module BUFF12 $end
-$var wire 1 $ __event $end
+$var wire 1 $ __cycle $end
 $var wire 1 9 a $end
 $var wire 1 8 q $end
 $upscope $end
 $scope module BUFF6 $end
-$var wire 1 $ __event $end
+$var wire 1 $ __cycle $end
 $var wire 1 7 q $end
 $var wire 1 1 a $end
 $upscope $end
 $scope module BUFF7 $end
-$var wire 1 $ __event $end
+$var wire 1 $ __cycle $end
 $var wire 1 7 a $end
 $var wire 1 6 q $end
 $upscope $end
 $scope module BUFF9 $end
-$var wire 1 $ __event $end
+$var wire 1 $ __cycle $end
 $var wire 1 5 q $end
 $var wire 1 0 a $end
 $upscope $end
 $scope module DFF4 $end
-$var wire 1 $ __event $end
+$var wire 1 $ __cycle $end
 $var wire 1 < a $end
 $var wire 1 4 q $end
 $var wire 1 , clk $end
 $var reg 1 = a_reg $end
 $upscope $end
 $scope module DFF8 $end
-$var wire 1 $ __event $end
+$var wire 1 $ __cycle $end
 $var wire 1 ; a $end
 $var wire 1 3 q $end
 $var wire 1 + clk $end
 $var reg 1 > a_reg $end
 $upscope $end
 $scope module HalfAdder13 $end
-$var wire 1 $ __event $end
+$var wire 1 $ __cycle $end
 $var wire 1 : a $end
 $var wire 1 8 b $end
 $var wire 1 " s $end
@@ -106,7 +106,7 @@ $var reg 1 F _SPLIT2_q2_d1 $end
 $var reg 1 G _SPLIT3_q1_d1 $end
 $var reg 1 H _SPLIT3_q2_d1 $end
 $scope module AND4 $end
-$var wire 1 $ __event $end
+$var wire 1 $ __cycle $end
 $var wire 1 E a $end
 $var wire 1 G b $end
 $var wire 1 2 q $end
@@ -115,25 +115,25 @@ $var reg 1 I a_reg $end
 $var reg 1 J b_reg $end
 $upscope $end
 $scope module SPLIT1 $end
-$var wire 1 $ __event $end
+$var wire 1 $ __cycle $end
 $var wire 1 D q1 $end
 $var wire 1 C q2 $end
 $var wire 1 * a $end
 $upscope $end
 $scope module SPLIT2 $end
-$var wire 1 $ __event $end
+$var wire 1 $ __cycle $end
 $var wire 1 : a $end
 $var wire 1 B q1 $end
 $var wire 1 A q2 $end
 $upscope $end
 $scope module SPLIT3 $end
-$var wire 1 $ __event $end
+$var wire 1 $ __cycle $end
 $var wire 1 8 a $end
 $var wire 1 @ q1 $end
 $var wire 1 ? q2 $end
 $upscope $end
 $scope module XOR5 $end
-$var wire 1 $ __event $end
+$var wire 1 $ __cycle $end
 $var wire 1 F a $end
 $var wire 1 H b $end
 $var wire 1 C clk $end
@@ -143,7 +143,7 @@ $var reg 1 L b_reg $end
 $upscope $end
 $upscope $end
 $scope module HalfAdder3 $end
-$var wire 1 $ __event $end
+$var wire 1 $ __cycle $end
 $var wire 1 % a $end
 $var wire 1 & b $end
 $var wire 1 0 s $end
@@ -160,7 +160,7 @@ $var reg 1 T _SPLIT2_q2_d1 $end
 $var reg 1 U _SPLIT3_q1_d1 $end
 $var reg 1 V _SPLIT3_q2_d1 $end
 $scope module AND4 $end
-$var wire 1 $ __event $end
+$var wire 1 $ __cycle $end
 $var wire 1 S a $end
 $var wire 1 U b $end
 $var wire 1 1 q $end
@@ -169,25 +169,25 @@ $var reg 1 W a_reg $end
 $var reg 1 X b_reg $end
 $upscope $end
 $scope module SPLIT1 $end
-$var wire 1 $ __event $end
+$var wire 1 $ __cycle $end
 $var wire 1 R q1 $end
 $var wire 1 Q q2 $end
 $var wire 1 . a $end
 $upscope $end
 $scope module SPLIT2 $end
-$var wire 1 $ __event $end
+$var wire 1 $ __cycle $end
 $var wire 1 % a $end
 $var wire 1 P q1 $end
 $var wire 1 O q2 $end
 $upscope $end
 $scope module SPLIT3 $end
-$var wire 1 $ __event $end
+$var wire 1 $ __cycle $end
 $var wire 1 & a $end
 $var wire 1 N q1 $end
 $var wire 1 M q2 $end
 $upscope $end
 $scope module XOR5 $end
-$var wire 1 $ __event $end
+$var wire 1 $ __cycle $end
 $var wire 1 T a $end
 $var wire 1 V b $end
 $var wire 1 Q clk $end
@@ -197,25 +197,25 @@ $var reg 1 Z b_reg $end
 $upscope $end
 $upscope $end
 $scope module MERGE14 $end
-$var wire 1 $ __event $end
+$var wire 1 $ __cycle $end
 $var wire 1 3 a $end
 $var wire 1 2 b $end
 $var wire 1 # q $end
 $upscope $end
 $scope module SPLIT1 $end
-$var wire 1 $ __event $end
+$var wire 1 $ __cycle $end
 $var wire 1 ! a $end
 $var wire 1 / q1 $end
 $var wire 1 . q2 $end
 $upscope $end
 $scope module SPLIT2 $end
-$var wire 1 $ __event $end
+$var wire 1 $ __cycle $end
 $var wire 1 / a $end
 $var wire 1 - q1 $end
 $var wire 1 , q2 $end
 $upscope $end
 $scope module SPLIT5 $end
-$var wire 1 $ __event $end
+$var wire 1 $ __cycle $end
 $var wire 1 - a $end
 $var wire 1 + q1 $end
 $var wire 1 * q2 $end
@@ -328,9 +328,9 @@ b11 )
 1%
 1F
 1E
-1V
 1U
 0T
+1V
 0S
 b100 (
 b100 )
@@ -366,22 +366,22 @@ b101 )
 06
 07
 01
+13
 1@
 1?
 18
 19
 14
-13
 1P
 1O
 1%
-1<
 1;
+1<
 0F
 0E
-0V
 0U
 0T
+0V
 0S
 b110 (
 b110 )
@@ -399,8 +399,8 @@ b110 )
 03
 1T
 1S
-1H
 1G
+1H
 0;
 1N
 1M
@@ -422,9 +422,9 @@ b111 )
 1%
 1F
 1E
-1V
 1U
 0T
+1V
 0S
 b0 (
 b1000 )
@@ -460,19 +460,19 @@ b1001 )
 06
 07
 01
+13
 0@
 0?
 08
 09
 04
-13
-0<
 1;
+0<
 0F
 0E
-0V
 0U
 0T
+0V
 0S
 b10 (
 b1010 )
@@ -483,8 +483,8 @@ b1010 )
 0"
 0#
 03
-0H
 0G
+0H
 0;
 b11 (
 b1011 )

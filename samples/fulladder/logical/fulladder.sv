@@ -8,20 +8,20 @@ module top;
   // Outputs
   wire cout, s;
 
-  reg __event;
+  reg __cycle;
   integer step;
 
   FullAdder dut (.*);
 
   // Simulation Steps
   initial begin
-    __event = 0;
+    __cycle = 0;
     step = 0;
     forever begin
       #50;
-      __event = 0;
+      __cycle = 0;
       #50;
-      __event = 1;
+      __cycle = 1;
       step = step + 1;
     end
   end
@@ -35,11 +35,11 @@ module top;
     b   = 0;
     cin = 0;
     for (i = 0; i < 8; i++) begin
-      @(posedge __event);
+      @(posedge __cycle);
       {cin, b, a} <= i;
     end
     for (i = 0; i < 3; i++) begin
-      @(posedge __event);
+      @(posedge __cycle);
       {cin, b, a} <= 3'b000;
     end
     $finish;
