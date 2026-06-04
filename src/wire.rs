@@ -72,3 +72,14 @@ impl Wire {
         self
     }
 }
+
+impl CounterWire {
+    pub fn label<const N_I: usize, const N_CI: usize, const N_O: usize, const N_CO: usize>(
+        self,
+        label: &str,
+        circuit: &mut Circuit<N_I, N_CI, N_O, N_CO>,
+    ) -> Self {
+        circuit.clabel(&self, label);
+        self
+    }
+}
