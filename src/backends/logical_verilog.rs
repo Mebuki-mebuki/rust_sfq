@@ -2,18 +2,19 @@ use super::Backend;
 use crate::circuit::Circuit;
 use crate::gate::Gate;
 use crate::id::WireID;
+use crate::location::SourceLocation;
 use colored::Colorize;
 use std::collections::{BTreeSet, HashMap};
 
 pub struct LogicalVerilog;
 
-fn assert_data_clock_ordering(data: usize, clk: usize, gate: &str) {
+fn assert_data_clock_ordering(data: usize, clk: usize, gate: &str, location: SourceLocation) {
     assert!(
         data != clk,
         "{}",
         format!(
-            "Data and clock wires cannot have the same order (gate: {})",
-            gate
+            "Data and clock wires cannot have the same order (gate: {}, defined at {})",
+            gate, location
         )
         .red()
     );
@@ -54,10 +55,10 @@ fn calc_inserted_reg<const N_I: usize, const N_CI: usize, const N_O: usize, cons
 
     // サイクル間の遅延数を初期値としてセット
     for (id, info) in c.wires() {
-        map.insert(id, info.delay);
+        map.insert(id, info.value.delay);
     }
     for gate in c.gates().iter() {
-        let ins_clk_name = match gate {
+        let ins_clk_name = match &gate.value {
             Gate::And {
                 a, b, clk, name, ..
             } => Some((vec![a, b], clk, name)),
@@ -81,7 +82,7 @@ fn calc_inserted_reg<const N_I: usize, const N_CI: usize, const N_O: usize, cons
             for &&id_order in ins.iter() {
                 let id = c.resolved_wire_id(id_order.id);
                 let order = id_order.order;
-                assert_data_clock_ordering(order, clk.order, name);
+                assert_data_clock_ordering(order, clk.order, name, gate.location);
 
                 if order > clk.order {
                     // データの方が遅い場合は, パイプライン動作になるので reg を追加
@@ -136,21 +137,22 @@ impl Backend for LogicalVerilog {
 
         for (id, info) in c.wires().iter() {
             let reg_count = inserted_regs[&id];
+            let wire = &info.value;
 
             if reg_count == 0 {
-                delayed_wire_names.insert(id, info.name.clone());
+                delayed_wire_names.insert(id, wire.name.clone());
                 continue;
             }
-            let mut prev_name = &info.name;
+            let mut prev_name = &wire.name;
             for d in 1..=reg_count {
-                let dname = delayed_name(&info.name, d);
+                let dname = delayed_name(&wire.name, d);
                 assignments.push(format!("{} <= {};", dname, prev_name));
 
                 // 配線用 reg を初期値 0 で宣言
                 regs.insert(format!("{} = 1'b0", dname));
                 prev_name = regs.last().unwrap();
             }
-            delayed_wire_names.insert(id, delayed_name(&info.name, reg_count));
+            delayed_wire_names.insert(id, delayed_name(&wire.name, reg_count));
         }
         if regs.len() > 0 {
             res.push(format!(
@@ -162,7 +164,7 @@ impl Backend for LogicalVerilog {
         /* ------------------- body ------------------- */
         let m = &delayed_wire_names;
         for gate in c.gates().iter() {
-            let s = match gate {
+            let s = match &gate.value {
                 Gate::Jtl { name, a, q } => gate_string(c, m, name, vec![a], vec![q], "jtl"),
                 Gate::Split { name, a, q1, q2 } => {
                     gate_string(c, m, name, vec![a], vec![q1, q2], "split")

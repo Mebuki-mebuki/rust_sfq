@@ -56,7 +56,7 @@ impl Backend for RsfqlibVerilog {
 
         /* ------------------- body ------------------- */
         for gate in c.gates().iter() {
-            let s = match gate {
+            let s = match &gate.value {
                 Gate::Jtl { name, a, q } => gate_string!(c, name, [*a, *q], "JTL"),
                 Gate::Split { name, a, q1, q2 } => gate_string!(c, name, [*a, *q1, *q2], "SPLIT"),
                 Gate::Merge { name, a, b, q } => gate_string!(c, name, [*a, *b, *q], "MERGE"),

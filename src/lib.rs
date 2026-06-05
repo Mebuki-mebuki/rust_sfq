@@ -2,6 +2,7 @@ mod backends;
 mod circuit;
 mod gate;
 mod id;
+mod location;
 mod wire;
 
 pub use backends::*;

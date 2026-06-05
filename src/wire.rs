@@ -1,5 +1,6 @@
 use crate::circuit::Circuit;
 use crate::id::{CircuitID, WireID};
+use crate::location::SourceLocation;
 use colored::Colorize;
 
 // 配線の本質的な情報
@@ -19,14 +20,16 @@ impl WireInfo {
 pub(crate) struct WireKey {
     pub(crate) id: WireID,
     pub(crate) cid: CircuitID,
+    pub(crate) location: SourceLocation,
     used: bool,
 }
 
 impl WireKey {
-    pub(crate) fn new(id: WireID, cid: CircuitID) -> Self {
+    pub(crate) fn new(id: WireID, cid: CircuitID, location: SourceLocation) -> Self {
         Self {
             id,
             cid,
+            location,
             used: false,
         }
     }
@@ -42,7 +45,11 @@ impl Drop for WireKey {
     // 未使用チェック (ユーザーのコードによっては発生する)
     fn drop(&mut self) {
         if !std::thread::panicking() {
-            assert!(self.used, "{}", String::from("wire is unused!").red());
+            assert!(
+                self.used,
+                "{}",
+                format!("wire is unused! defined at {}", self.location).red()
+            );
         }
     }
 }
