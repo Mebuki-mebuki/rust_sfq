@@ -35,13 +35,9 @@ fn gate_string<const N_I: usize, const N_CI: usize, const N_O: usize, const N_CO
 ) -> String {
     let mut ports = Vec::new();
     // 入力は遅延つき
-    ports.extend(
-        inputs
-            .iter()
-            .map(|id| m[&c.resolved_wire_id(**id)].as_str()),
-    );
+    ports.extend(inputs.iter().map(|id| m[id].as_str()));
     // 出力は遅延なし
-    ports.extend(outputs.iter().map(|id| c.get_resolved_wire_name(**id)));
+    ports.extend(outputs.iter().map(|id| c.get_wire_name(**id)));
     // イベント
     ports.push("__cycle");
     format!("rustsfq_{} {} ({});", gate, name, ports.join(", "))
@@ -80,7 +76,7 @@ fn calc_inserted_reg<const N_I: usize, const N_CI: usize, const N_O: usize, cons
         };
         if let Some((ins, &clk, name)) = ins_clk_name {
             for &&id_order in ins.iter() {
-                let id = c.resolved_wire_id(id_order.id);
+                let id = id_order.id;
                 let order = id_order.order;
                 assert_data_clock_ordering(order, clk.order, name, gate.location);
 
@@ -206,9 +202,9 @@ impl Backend for LogicalVerilog {
                 } => {
                     let mut ports = Vec::new();
                     // 入力は遅延つき
-                    ports.extend(inputs.iter().map(|id| m[&c.resolved_wire_id(*id)].as_str()));
+                    ports.extend(inputs.iter().map(|id| m[id].as_str()));
                     // 出力は遅延なし
-                    ports.extend(outputs.iter().map(|id| c.get_resolved_wire_name(*id)));
+                    ports.extend(outputs.iter().map(|id| c.get_wire_name(*id)));
                     // イベント
                     ports.push("__cycle");
                     format!("{} {} ({});", circuit, name, ports.join(", "))

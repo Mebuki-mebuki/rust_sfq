@@ -17,7 +17,7 @@ fn warn_timing_ignored() {
 //  (circuit, gate名, 引数WireIDリスト, ゲート名)
 macro_rules! gate_string {
     ($c:ident, $name:ident, [$($arg:expr),*],$gate:expr) => {
-        format!("X{} {} THmitll_{}", $name, vec![$($c.get_resolved_wire_name($arg), )*].join(" "), $gate)
+        format!("X{} {} THmitll_{}", $name, vec![$($c.get_wire_name($arg), )*].join(" "), $gate)
     };
 }
 
@@ -61,7 +61,7 @@ impl Backend for RsfqlibSpice {
                 Gate::Buff { name, a, q } => gate_string!(c, name, [*a, *q], "BUFF"),
                 Gate::ZeroAsync { name, q } => gate_string!(c, name, [*q], "ALWAYS0_ASYNC_NOA"),
                 Gate::Terminate { name, a } => {
-                    format!("R{} {} 0 2", name, c.get_resolved_wire_name(*a))
+                    format!("R{} {} 0 2", name, c.get_wire_name(*a))
                 }
                 Gate::Subcircuit {
                     name,
@@ -72,7 +72,7 @@ impl Backend for RsfqlibSpice {
                     let ports: Vec<&str> = inputs
                         .iter()
                         .chain(outputs.iter())
-                        .map(|wid| c.get_resolved_wire_name(*wid))
+                        .map(|wid| c.get_wire_name(*wid))
                         .collect();
                     format!("X{} {} {}", name, ports.join(" "), circuit)
                 }

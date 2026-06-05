@@ -19,7 +19,7 @@ fn warn_timing_ignored() {
 macro_rules! gate_string {
     ($c:ident, $name:ident, [$($arg:expr),*], $gate:expr) => {
         format!("THmitll_{}_v3p0_extracted {} ({});", $gate, $name,
-            vec![ $($c.get_resolved_wire_name($arg), )*].join(", ")
+            vec![ $($c.get_wire_name($arg), )*].join(", ")
         )
     };
 }
@@ -85,7 +85,7 @@ impl Backend for RsfqlibVerilog {
                 Gate::ZeroAsync { name, q } => format!(
                     "THmitll_ALWAYS0_ASYNC_NOA {} ({});",
                     name,
-                    c.get_resolved_wire_name(*q)
+                    c.get_wire_name(*q)
                 ),
                 Gate::Terminate { name: _, a: _ } => String::new(),
                 Gate::Subcircuit {
@@ -97,7 +97,7 @@ impl Backend for RsfqlibVerilog {
                     let ports: Vec<&str> = inputs
                         .iter()
                         .chain(outputs.iter())
-                        .map(|wid| c.get_resolved_wire_name(*wid))
+                        .map(|wid| c.get_wire_name(*wid))
                         .collect();
                     format!("{} {} ({});", circuit, name, ports.join(", "))
                 }

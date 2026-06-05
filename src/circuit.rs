@@ -1,5 +1,5 @@
 use colored::Colorize;
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 use twox_hash::XxHash32;
 
 use crate::gate::Gate;
@@ -17,7 +17,7 @@ pub struct Circuit<const N_I: usize, const N_CI: usize, const N_O: usize, const 
 
     wires: HashMap<WireID, Located<WireInfo>>,
     gates: Vec<Located<Gate>>,
-    aliases: HashMap<WireID, WireID>,
+    wire_to_gates: HashMap<WireID, HashSet<usize>>,
 
     next_wire_id: u32,
     next_gate_id: u32,
@@ -117,12 +117,11 @@ impl<const N_I: usize, const N_CI: usize, const N_O: usize, const N_CO: usize>
         &self.wires
     }
 
-    pub(crate) fn get_resolved_wire(&self, id: WireID) -> &WireInfo {
-        let resolved_id = self.resolved_wire_id(id);
-        &self.wires.get(&resolved_id).unwrap().value
+    pub(crate) fn get_wire(&self, id: WireID) -> &WireInfo {
+        &self.wires.get(&id).unwrap().value
     }
-    pub(crate) fn get_resolved_wire_name(&self, id: WireID) -> &str {
-        self.get_resolved_wire(id).name.as_str()
+    pub(crate) fn get_wire_name(&self, id: WireID) -> &str {
+        self.get_wire(id).name.as_str()
     }
 
     pub(crate) fn all_wire_names(&self) -> Vec<&str> {
@@ -235,7 +234,7 @@ impl<const N_I: usize, const N_CI: usize, const N_O: usize, const N_CO: usize>
             counter_outputs: counter_outputs.map(|s| s.to_string()),
             wires: HashMap::new(),
             gates: Vec::new(),
-            aliases: HashMap::new(),
+            wire_to_gates: HashMap::new(),
             next_wire_id: 1,
             next_gate_id: 1,
         };
@@ -273,6 +272,10 @@ impl<const N_I: usize, const N_CI: usize, const N_O: usize, const N_CO: usize>
     }
 
     fn push_gate_at(&mut self, gate: Gate, location: SourceLocation) {
+        let gate_index = self.gates.len();
+        for id in gate.wire_ids() {
+            self.wire_to_gates.entry(id).or_default().insert(gate_index);
+        }
         self.gates.push(Located::new(gate, location));
     }
 
@@ -282,13 +285,16 @@ impl<const N_I: usize, const N_CI: usize, const N_O: usize, const N_CO: usize>
         return res;
     }
 
-    // unify で生じるエイリアスを解決する
-    pub(crate) fn resolved_wire_id(&self, id: WireID) -> WireID {
-        let mut current_id = id;
-        while let Some(next_id) = self.aliases.get(&current_id) {
-            current_id = *next_id;
+    fn replace_wire_id_in_gates(&mut self, from: WireID, to: WireID) {
+        let Some(gate_indices) = self.wire_to_gates.remove(&from) else {
+            return;
+        };
+
+        for gate_index in gate_indices {
+            let gate = &mut self.gates[gate_index].value;
+            gate.replace_wire_id(from, to);
+            self.wire_to_gates.entry(to).or_default().insert(gate_index);
         }
-        current_id
     }
 
     // circuit.label(&wire, "hoge") でラベル付け
@@ -598,8 +604,10 @@ impl<const N_I: usize, const N_CI: usize, const N_O: usize, const N_CO: usize>
             delay,
         };
 
+        // ゲート内の参照を代表 ID に更新
+        self.replace_wire_id_in_gates(sub_id, prime_id);
+
         // 情報の更新
-        self.aliases.insert(sub_id, prime_id);
         self.wires
             .insert(prime_id, Located::new(new_info, location));
         self.wires.remove(&sub_id);
