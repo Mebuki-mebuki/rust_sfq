@@ -56,21 +56,13 @@ fn full_adder_circuit(ha: &Circuit<3, 0, 2, 0>) -> Circuit<4, 0, 2, 0> {
 fn main() {
     let ha = half_adder_circuit();
     let fa = full_adder_circuit(&ha);
+    let design = design![&ha, &fa];
 
     let args: Vec<String> = env::args().collect();
     match args.get(1).map(|s| s.as_str()) {
-        Some("logical") => {
-            println!("{}", LogicalVerilog::generate(&ha));
-            println!("{}", LogicalVerilog::generate(&fa));
-        }
-        Some("spice") => {
-            println!("{}", RsfqlibSpice::generate(&ha));
-            println!("{}", RsfqlibSpice::generate(&fa));
-        }
-        Some("verilog") => {
-            println!("{}", RsfqlibVerilog::generate(&ha));
-            println!("{}", RsfqlibVerilog::generate(&fa));
-        }
+        Some("logical") => design.print(LogicalVerilog),
+        Some("spice") => design.print(RsfqlibSpice),
+        Some("verilog") => design.print(RsfqlibVerilog),
         _ => {
             println!("Usage: cargo run [logical|spice|verilog]");
         }

@@ -1,8 +1,7 @@
 use std::collections::BTreeSet;
 use std::sync::Once;
 
-use super::Backend;
-use crate::circuit::Circuit;
+use super::{Backend, BackendCircuit};
 use crate::gate::Gate;
 
 pub struct RsfqlibVerilog;
@@ -25,9 +24,8 @@ macro_rules! gate_string {
 }
 
 impl Backend for RsfqlibVerilog {
-    fn generate<const N_I: usize, const N_CI: usize, const N_O: usize, const N_CO: usize>(
-        c: &Circuit<N_I, N_CI, N_O, N_CO>,
-    ) -> String {
+    fn generate(&self, circuit: &BackendCircuit<'_>) -> String {
+        let c = circuit.view();
         warn_timing_ignored();
         let mut res = Vec::new();
 
@@ -93,6 +91,7 @@ impl Backend for RsfqlibVerilog {
                     inputs,
                     outputs,
                     circuit,
+                    ..
                 } => {
                     let ports: Vec<&str> = inputs
                         .iter()

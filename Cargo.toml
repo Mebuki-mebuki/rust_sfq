@@ -19,3 +19,4 @@ include = [
 [dependencies]
 twox-hash = "2.1.0"
 colored = "3.0.0"
+petgraph = "0.6"

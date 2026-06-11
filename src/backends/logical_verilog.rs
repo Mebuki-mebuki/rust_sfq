@@ -1,32 +1,18 @@
-use super::Backend;
-use crate::circuit::Circuit;
+use super::{Backend, BackendCircuit};
+use crate::circuit_view::CircuitView;
 use crate::gate::Gate;
 use crate::id::WireID;
-use crate::location::SourceLocation;
-use colored::Colorize;
 use std::collections::{BTreeSet, HashMap};
 
 pub struct LogicalVerilog;
-
-fn assert_data_clock_ordering(data: usize, clk: usize, gate: &str, location: SourceLocation) {
-    assert!(
-        data != clk,
-        "{}",
-        format!(
-            "Data and clock wires cannot have the same order (gate: {}, defined at {})",
-            gate, location
-        )
-        .red()
-    );
-}
 
 // ワイヤ名から遅延付きワイヤ名を生成する
 fn delayed_name(name: &str, delay: usize) -> String {
     format!("{}_d{}", name, delay)
 }
 
-fn gate_string<const N_I: usize, const N_CI: usize, const N_O: usize, const N_CO: usize>(
-    c: &Circuit<N_I, N_CI, N_O, N_CO>,
+fn gate_string(
+    c: &dyn CircuitView,
     m: &HashMap<&WireID, String>, // delayed_wire_names
     name: &str,
     inputs: Vec<&WireID>,
@@ -44,9 +30,7 @@ fn gate_string<const N_I: usize, const N_CI: usize, const N_O: usize, const N_CO
 }
 
 // ゲート内のローカルな順番とサイクル間の遅延から必要なregの数を計算する.
-fn calc_inserted_reg<const N_I: usize, const N_CI: usize, const N_O: usize, const N_CO: usize>(
-    c: &Circuit<N_I, N_CI, N_O, N_CO>,
-) -> HashMap<&WireID, usize> {
+fn calc_inserted_reg(c: &dyn CircuitView) -> HashMap<&WireID, usize> {
     let mut map = HashMap::new();
 
     // サイクル間の遅延数を初期値としてセット
@@ -74,11 +58,10 @@ fn calc_inserted_reg<const N_I: usize, const N_CI: usize, const N_O: usize, cons
             } => Some((vec![a, b], clk, name)),
             _ => None,
         };
-        if let Some((ins, &clk, name)) = ins_clk_name {
+        if let Some((ins, &clk, _name)) = ins_clk_name {
             for &&id_order in ins.iter() {
                 let id = id_order.id;
                 let order = id_order.order;
-                assert_data_clock_ordering(order, clk.order, name, gate.location);
 
                 if order > clk.order {
                     // データの方が遅い場合は, パイプライン動作になるので reg を追加
@@ -93,9 +76,8 @@ fn calc_inserted_reg<const N_I: usize, const N_CI: usize, const N_O: usize, cons
 }
 
 impl Backend for LogicalVerilog {
-    fn generate<const N_I: usize, const N_CI: usize, const N_O: usize, const N_CO: usize>(
-        c: &Circuit<N_I, N_CI, N_O, N_CO>,
-    ) -> String {
+    fn generate(&self, circuit: &BackendCircuit<'_>) -> String {
+        let c = circuit.view();
         let mut res = Vec::new();
 
         /* ------------------- header ------------------- */
@@ -199,6 +181,7 @@ impl Backend for LogicalVerilog {
                     inputs,
                     outputs,
                     circuit,
+                    ..
                 } => {
                     let mut ports = Vec::new();
                     // 入力は遅延つき

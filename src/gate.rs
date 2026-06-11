@@ -1,4 +1,4 @@
-use crate::id::{OrderedWireID, WireID};
+use crate::id::{CircuitID, OrderedWireID, WireID};
 
 #[derive(Debug)]
 pub(crate) enum Gate {
@@ -84,6 +84,7 @@ pub(crate) enum Gate {
         inputs: Vec<WireID>,
         outputs: Vec<WireID>,
         circuit: String,
+        circuit_id: CircuitID,
     },
     _Reserved, // 将来のゲート追加に備えてパターンマッチでワイルドカードを使ってもWarningが出ないようにする用
 }
