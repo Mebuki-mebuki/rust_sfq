@@ -1,23 +1,31 @@
 # Available Gates and Backends
 
-## Compatibility table (as of version 0.1.2)
+## Compatibility table (as of version 1.0.2)
 
-| Gate | RsfqlibSpice | RsfqlibVerilog |
-|------|:------------:|:--------------:|
-| JTL | ✅ | ✅ |
-| SPLIT | ✅ | ✅ |
-| MERGE | ✅ | ✅ |
-| AND | ✅ | ✅ |
-| OR | ✅ | ✅ |
-| XOR | ✅ | ✅ |
-| NOT | ✅ | ✅ |
-| XNOR | ✅ | ✅ |
-| DFF | ✅ | ✅ |
-| NDRO | ✅ | ✅ |
-| BUFF | ✅ | ✅ |
-| ZERO_ASYNC | ✅ | ✅ |
-| TERMINATE | ✅ | ✅ |
+| Gate | LogicalVerilog | RsfqlibSpice | RsfqlibVerilog |
+|------|:--------------:|:------------:|:--------------:|
+| JTL | ✅ | ✅ | ✅ |
+| SPLIT | ✅ | ✅ | ✅ |
+| MERGE | ✅ | ✅ | ✅ |
+| AND | ✅ | ✅ | ✅ |
+| OR | ✅ | ✅ | ✅ |
+| XOR | ✅ | ✅ | ✅ |
+| NOT | ✅ | ✅ | ✅ |
+| XNOR | ✅ | ✅ | ✅ |
+| DFF | ✅ | ✅ | ✅ |
+| NDRO | ✅ | ✅ | ✅ |
+| BUFF | ✅ | ✅ | ✅ |
+| ZERO_ASYNC | ✅ | ✅ | ✅ |
+| TERMINATE | ✅ | ✅ | ✅ |
 
 ## Backends
 
-- RSFQlib (<https://github.com/sunmagnetics/RSFQlib>)
+Backends are selected when generating a `Design`:
+
+```rust
+let netlist = design![&circuit].generate(RsfqlibSpice);
+```
+
+- `LogicalVerilog`: simple logical Verilog output for simulation
+- `RsfqlibSpice`: SPICE output using RSFQlib (<https://github.com/sunmagnetics/RSFQlib>)
+- `RsfqlibVerilog`: Verilog output using RSFQlib cell names

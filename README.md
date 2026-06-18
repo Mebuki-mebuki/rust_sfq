@@ -35,30 +35,29 @@ fn main() {
     let (mut circuit, [a, b, clk], [], [o_c, o_s], []) =
         Circuit::create(["a", "b", "clk"], [], ["c", "s"], [], "HalfAdder");
 
-    let [a1, a2] = circuit.split(a);
-    let [b1, b2] = circuit.split(b);
-    let [clk1, clk2] = circuit.split(clk);
-    circuit.label(&clk1, "clk_1");
+    let (a1, a2) = circuit.split(a);
+    let (b1, b2) = circuit.split(b);
+    let (clk1, clk2) = circuit.split(clk);
 
-    let c = circuit.and(a1, b1, clk1);
-    let s = circuit.xor(a2, b2, clk2);
+    let c = circuit.and_p(a1, b1, clk1);
+    let s = circuit.xor_p(a2, b2, clk2);
 
     circuit.unify(c, o_c);
     circuit.unify(s, o_s);
 
-    println!("{}", RsfqlibSpice::generate(&circuit));
+    design![&circuit].print(RsfqlibSpice);
 }
 ```
 
 ### Output in SPICE format
 
 ```text
-.subckt HalfAdder a b clk  c s 
-XSPLIT1 a _XSPLIT1_q1 _XSPLIT1_q2 THmitll_SPLIT
-XSPLIT2 b _XSPLIT2_q1 _XSPLIT2_q2 THmitll_SPLIT
-XSPLIT3 clk clk_1 _XSPLIT3_q2 THmitll_SPLIT
-XAND4 _XSPLIT1_q1 _XSPLIT2_q1 clk_1 c THmitll_AND
-XXOR5 _XSPLIT1_q2 _XSPLIT2_q2 _XSPLIT3_q2 s THmitll_XOR
+.subckt HalfAdder a b clk c s
+XSPLIT1 a _SPLIT1_q1 _SPLIT1_q2 THmitll_SPLIT
+XSPLIT2 b _SPLIT2_q1 _SPLIT2_q2 THmitll_SPLIT
+XSPLIT3 clk _SPLIT3_q1 _SPLIT3_q2 THmitll_SPLIT
+XAND4 _SPLIT1_q1 _SPLIT2_q1 _SPLIT3_q1 c THmitll_AND2
+XXOR5 _SPLIT1_q2 _SPLIT2_q2 _SPLIT3_q2 s THmitll_XOR
 .ends
 ```
 

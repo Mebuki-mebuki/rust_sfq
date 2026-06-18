@@ -358,5 +358,5 @@ This brings all public items from the crate into scope, including:
 If you prefer more explicit imports:
 
 ```rust
-use rust_sfq::{Circuit, RsfqlibSpice};
+use rust_sfq::{design, Circuit, RsfqlibSpice};
 ```

@@ -4,9 +4,9 @@
 
 The `Circuit` struct corresponds to a subcircuit in SPICE and serves as the main object for constructing SFQ circuits in RustSFQ.
 
-The `Circuit` instance holds all the necessary information to generate a netlist.
+The `Circuit` instance holds the gate and wire information needed to build a netlist.
 
-By passing a reference to a backend's `generate()` function, you can convert the circuit into a string in formats such as SPICE or Verilog, depending on the backend.
+Netlist generation is performed through `Design`. A `Design` runs timing checks for its circuits and then invokes the selected backend, such as SPICE or Verilog.
 
 ---
 
@@ -71,17 +71,35 @@ To construct a circuit, a `Circuit` **instance** provides the following function
 ### Logic Gates
 
 The `and()` function adds an AND gate to the circuit.
-The `and_labeled()` is a convenience function that combines `and()` with `label()`, allowing you to define the gate and assign a label to its output wire in a single step.
 
 ```rust
-pub fn and(&self, a: Wire, b: Wire, clk: Wire) -> Wire
-pub fn and_labeled(&self, a: Wire, b: Wire, clk: Wire, label: &str) -> Wire
+pub fn and(&mut self, a: OrderedWire, b: OrderedWire, clk: OrderedWire) -> Wire
+pub fn and_p(&mut self, a: Wire, b: Wire, clk: Wire) -> Wire
 ```
 
 This function takes ownership of the input wires: `a`, `b`, and `clk`.
 After being passed into the function, these wire values cannot be used again elsewhere in the program.
 
 The function returns a new `Wire` that represents the output of the AND gate.
+Clocked gates take `OrderedWire` values. Use the `%` operator to attach the local order:
+
+```rust
+let q = circuit.and(a % 1, b % 1, clk % 0);
+```
+
+In normal user code, you do not need to name the `OrderedWire` type directly; it is produced by the `%` operator.
+
+Timing constraints are generated from smaller order values to larger order values. Equal order values mean there is no ordering constraint between those inputs.
+
+For the common pipeline case, use the `_p` variants:
+
+```rust
+let q = circuit.and_p(a, b, clk);
+```
+
+`and_p(a, b, clk)` is shorthand for `and(a % 1, b % 1, clk % 0)`. The same pattern is available for `or_p`, `xor_p`, `not_p`, `xnor_p`, and `dff_p`.
+
+Use the explicit ordered form when a gate needs a timing relation other than "clock first, data second".
 
 ---
 
@@ -95,7 +113,6 @@ The `split()` function adds an SPLIT gate to the circuit.
 
 ```rust
 pub fn split(&mut self, a: Wire) -> (Wire, Wire)
-pub fn split_labeled(&mut self, a: Wire, label1: &str, label2: &str) -> (Wire, Wire)
 ```
 
 The function takes one input `Wire` and returns a tuple of two new `Wire` instances.
@@ -110,11 +127,8 @@ To support circuits employing counter-flow clocking, BUFF and SPLIT are availabl
 
 ```rust
 pub fn cbuff(&mut self, q: CounterWire) -> CounterWire
-pub fn cbuff_labeled(&mut self, q: CounterWire, label: &str) -> CounterWire
 pub fn csplit(&mut self, q1: CounterWire) -> (Wire, CounterWire)
-pub fn csplit_labeled(&mut self, q1: CounterWire, label_q2: &str, label_a: &str) -> (Wire, CounterWire) 
 pub fn csplit2(&mut self, q1: CounterWire, q2: CounterWire) -> CounterWire 
-pub fn csplit2_labeled(&mut self, q1: CounterWire, q2: CounterWire, label: &str) -> CounterWire
 ```
 
 The `cbuff()` function takes a `CounterWire` representing the **output** of a BUFF gate then returns a new `CounterWire` representing the **input** of the gate.
@@ -196,10 +210,22 @@ The label of the unified wire is determined as follows:
 
 You can assign an explicit label to a wire using the `label()` function.
 
-This function is defined generically for both `Wire` and `CounterWire`, meaning that `T` can be either type:
+For a `Wire`, call:
 
 ```rust
-pub fn label<T>(&mut self, wire: &T, label: &str)
+pub fn label(&mut self, wire: &Wire, label: &str)
+```
+
+For a `CounterWire`, call:
+
+```rust
+pub fn clabel(&mut self, cwire: &CounterWire, label: &str)
+```
+
+You can also label a wire inline and keep ownership of it:
+
+```rust
+let q = circuit.buff(a).label("q", &mut circuit);
 ```
 
 The function takes a **reference** to the wire, **so ownership is not moved**.
@@ -214,9 +240,9 @@ RustSFQ does not check for collisions among explicitly assigned labels; it is th
 
 ## Exporting
 
-By passing a reference of `Circuit` instance into a backend’s `generate()` function, you can convert the circuit into a backend-specific string representation.
+Use `Design` to check timing constraints and generate backend-specific output.
 
-The resulting string can be printed to standard output to obtain the final netlist.
+`design![...]` accepts circuits in subcircuit-to-parent order. This is important when a circuit instantiates another circuit, because the timing constraints of the subcircuit are needed before checking the parent.
 
 ```rust
 use rust_sfq::*;
@@ -227,9 +253,13 @@ fn full_adder(ha: &Circuit<3, 0, 2, 0>) -> Circuit<4, 0, 2, 0> { ... }
 fn main() {
     let half_adder = half_adder();
     let full_adder = full_adder(&half_adder);
-    
-    type Backend = RsfqlibSpice;
-    println!("{}", Backend::generate(&half_adder));
-    println!("{}", Backend::generate(&full_adder));
+
+    design![&half_adder, &full_adder].print(RsfqlibSpice);
 }
+```
+
+If you need the generated string instead of printing it directly, use `generate()`:
+
+```rust
+let netlist = design![&half_adder, &full_adder].generate(RsfqlibSpice);
 ```
