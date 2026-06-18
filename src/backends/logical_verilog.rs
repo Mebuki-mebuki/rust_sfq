@@ -121,14 +121,14 @@ impl Backend for LogicalVerilog {
                 delayed_wire_names.insert(id, wire.name.clone());
                 continue;
             }
-            let mut prev_name = &wire.name;
+            let mut prev_name = wire.name.clone();
             for d in 1..=reg_count {
                 let dname = delayed_name(&wire.name, d);
                 assignments.push(format!("{} <= {};", dname, prev_name));
 
                 // 配線用 reg を初期値 0 で宣言
                 regs.insert(format!("{} = 1'b0", dname));
-                prev_name = regs.last().unwrap();
+                prev_name = dname;
             }
             delayed_wire_names.insert(id, delayed_name(&wire.name, reg_count));
         }
