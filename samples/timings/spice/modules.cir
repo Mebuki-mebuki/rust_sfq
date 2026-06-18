@@ -1,0 +1,12 @@
+.subckt NorPipelined a b clk y
+XSPLIT1 clk clk1 clk2 THmitll_SPLIT
+XOR2 a b clk1 x THmitll_OR2
+XNOT3 x clk2 y THmitll_NOT
+.ends
+.subckt NorCombinational a b clk y
+XSPLIT1 clk clk1 _SPLIT1_q2 THmitll_SPLIT
+XOR2 a b clk1 x THmitll_OR2
+XBUFF3 _SPLIT1_q2 _BUFF3_q THmitll_BUFF
+XBUFF4 _BUFF3_q clk2 THmitll_BUFF
+XNOT5 x clk2 y THmitll_NOT
+.ends
