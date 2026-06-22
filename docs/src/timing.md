@@ -163,3 +163,110 @@ Cycle start positions differ by gate and are based on the earliest time at which
 In the first cycle of this example, there are no pulses on `A`, `B`, or `X`, but dashed lines mark where those pulses will appear if they are present.
 
 The `0` and `1` labels in this simulation result match the earlier cycle-level logical simulation.
+
+## Example 2: Single-Cycle and Multi-Cycle Paths
+
+The examples in this section compare a single-cycle path with a multi-cycle version of the same data path.
+Both circuits split the input `a` into two branches.
+One branch is captured by a DFF to produce `x`; the other branch is used as the second input of an AND gate.
+
+![Schematic shared by the single-cycle and multi-cycle examples: a DFF path and a bypass path from a split input meet at an AND gate](figures/single-multi-schem.webp)
+
+### Single-Cycle Path
+
+In the single-cycle version, the second branch, `a2`, has no explicit cycle delay.
+It is consumed by the pipelined AND gate in the usual way.
+The `_p` helpers describe the ordinary pipelined arrival order: the clock arrives before each data input.
+
+```rust
+fn single_cycle_path() -> Circuit<2, 0, 1, 0> {
+    let inputs = ["a", "clk"];
+    let outputs = ["y"];
+    let (mut ckt, [a, clk], [], [y_out], []) =
+        Circuit::create(inputs, [], outputs, [], "SingleCyclePath");
+
+    let (a1, a2) = ckt.split(a);
+    ckt.label(&a1, "a1");
+    ckt.label(&a2, "a2");
+
+    let (clk1, clk2) = ckt.split(clk);
+    ckt.label(&clk1, "clk1");
+    let x = ckt.dff_p(a1, clk1);
+    ckt.label(&x, "x");
+
+    ckt.label(&clk2, "clk2");
+    let y = ckt.and_p(x, a2, clk2);
+    let y = ckt.jtl(y);
+
+    ckt.unify(y, y_out);
+
+    ckt
+}
+```
+
+The cycle-level logical simulation shows the values of `a`, `x`, and `y` for the single-cycle path.
+The numbers in the waveform identify the input values associated with each cycle in which the AND output is `1`.
+
+![Cycle-level logical simulation of the single-cycle path](figures/single-cycle-logical.png)
+
+The corresponding analog simulation shows the pulse waveforms at the input, DFF output, bypass path, clock branches, and output.
+
+![Analog simulation waveform of the single-cycle path](figures/single-cycle-test.webp)
+
+### Multi-Cycle Path
+
+The multi-cycle version delays the `a2` branch by two additional cycles before it reaches the same AND gate.
+For example, this can model a very long interconnect whose signal propagation takes a substantial amount of time.
+
+```rust
+fn multi_cycle_path() -> Circuit<2, 0, 1, 0> {
+    let inputs = ["a", "clk"];
+    let outputs = ["y"];
+    let (mut ckt, [a, clk], [], [y_out], []) =
+        Circuit::create(inputs, [], outputs, [], "MultiCyclePath");
+
+    let (a1, a2) = ckt.split(a);
+    ckt.label(&a1, "a1");
+
+    // Physical delay for analog simulation.
+    let mut a2 = a2;
+    ckt.label(&a2, "a2_start");
+    for _ in 0..32 {
+        a2 = ckt.buff(a2);
+    }
+    ckt.label(&a2, "a2_end");
+
+    // Cycle delay for logical simulation.
+    ckt.add_delay(&a2, 2);
+
+    let (clk1, clk2) = ckt.split(clk);
+    ckt.label(&clk1, "clk1");
+    let x = ckt.dff_p(a1, clk1);
+    let x = ckt.buff(x);
+    let x = ckt.buff(x);
+    ckt.label(&x, "x");
+
+    ckt.label(&clk2, "clk2");
+    let y = ckt.and_p(x, a2, clk2);
+    let y = ckt.jtl(y);
+
+    ckt.unify(y, y_out);
+
+    ckt
+}
+```
+
+`add_delay(&a2, 2)` describes a two-cycle delay in RustSFQ's timing model.
+The cycle-level logical backend represents it with two additional registers.
+
+The BUFF chain is separate from the timing constraint. It supplies an actual physical delay for analog simulation, where the `a2_start` and `a2_end` labels make the delayed path easy to inspect.
+Timing annotations state the intended cycle-level behavior; physical buffers are still needed to make the analog circuit satisfy that intent.
+
+The logical simulation therefore differs from the single-cycle case.
+For each output pulse on `y`, the corresponding value of `a` is from three cycles earlier: one cycle of pipelining plus the two additional cycles.
+
+![Cycle-level logical simulation of the multi-cycle path](figures/multi-cycle-logical.png)
+
+The analog waveform confirms that the BUFF chain delays the `a2` path from `a2_start` to `a2_end` before it reaches the AND gate.
+
+![Analog simulation waveform of the multi-cycle path, including the delayed a2 branch](figures/multi-cycle-test.webp)
