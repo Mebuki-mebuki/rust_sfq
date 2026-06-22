@@ -36,10 +36,10 @@
             const path_to_root = "";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "searchindex-234f217d.js";
+            window.path_to_searchindex_js = "searchindex-cf161405.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="toc-5997ffd7.js"></script>
+        <script src="toc-85550d20.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -188,7 +188,7 @@
 <h2 id="3-add-rustsfq-to-dependencies"><a class="header" href="#3-add-rustsfq-to-dependencies">3. Add RustSFQ to Dependencies</a></h2>
 <p>To use RustSFQ in your project, add it to your <code>Cargo.toml</code> under the <code>[dependencies]</code> section:</p>
 <pre><code class="language-toml">[dependencies]
-rust_sfq = "0.1"  # Replace with the actual version
+rust_sfq = "1.0.3"
 </code></pre>
 <h2 id="4-optional-using-vscode-and-rust-analyzer"><a class="header" href="#4-optional-using-vscode-and-rust-analyzer">4. Optional: Using VSCode and rust-analyzer</a></h2>
 <p>You can use any text editor to develop with RustSFQ, but we recommend using Visual Studio Code along with the <strong>rust-analyzer</strong> extension.</p>
@@ -215,10 +215,9 @@ fn half_adder() -&gt; Circuit&lt;3, 0, 2, 0&gt; {
     let (a1, a2) = circuit.split(a);
     let (b1, b2) = circuit.split(b);
     let (clk1, clk2) = circuit.split(clk);
-    circuit.label(&amp;clk1, "clk_1");
 
-    let c = circuit.and(a1, b1, clk1);
-    let s = circuit.xor_labeled(a2, b2, clk2, "s");
+    let c = circuit.and_p(a1, b1, clk1);
+    let s = circuit.xor_p(a2, b2, clk2);
 
     circuit.unify(c, c_out);
     circuit.unify(s, s_out);
@@ -228,7 +227,7 @@ fn half_adder() -&gt; Circuit&lt;3, 0, 2, 0&gt; {
 
 fn main() {
     let ha = half_adder();
-    println!("{}", RsfqlibSpice::generate(&amp;ha));
+    design![&amp;ha].print(RsfqlibSpice);
 }</code></pre>
 <div align="center">
   <img src="figures/half_adder.svg" alt="Half Adder Schematic" />
@@ -271,21 +270,22 @@ let (clk1, clk2) = circuit.split(clk);
 <h2 id="labeling-wires"><a class="header" href="#labeling-wires">Labeling Wires</a></h2>
 <pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
 </span><span class="boring">fn main() {
-</span>circuit.label(&amp;clk1, "clk_1");
+</span>let c = circuit.and_p(a1, b1, clk1).label("c", &amp;mut circuit);
 <span class="boring">}</span></code></pre>
-<p>You can manually assign a label to any wire, which will appear in the generated netlist.<br>If you don’t provide a label, a unique name will be automatically assigned.</p>
+<p>You can manually assign a label to any wire, which will appear in the generated netlist.
+If you don’t provide a label, a unique name will be automatically assigned.</p>
 <h2 id="creating-gates"><a class="header" href="#creating-gates">Creating Gates</a></h2>
 <pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
 </span><span class="boring">fn main() {
-</span>let c = circuit.and(a1, b1, clk1);
-let s = circuit.xor_labeled(a2, b2, clk2, "s");
+</span>let c = circuit.and_p(a1, b1, clk1);
+let s = circuit.xor_p(a2, b2, clk2);
 <span class="boring">}</span></code></pre>
 <p>Logic gates such as <code>AND</code> and <code>XOR</code> are created by calling methods on the <code>Circuit</code> object.<br>In this example:</p>
 <ul>
-<li><code>and()</code> creates a carry gate</li>
-<li><code>xor_labeled()</code> creates a sum gate with a labeled output wire <code>"s"</code></li>
+<li><code>and_p()</code> creates a carry gate</li>
+<li><code>xor_p()</code> creates a sum gate</li>
 </ul>
-<p><code>xor_labeled()</code> is a convenience wrapper for <code>xor()</code> followed by <code>label()</code>.</p>
+<p>The <code>_p</code> suffix means the gate is pipelined. It is shorthand for calling the ordered form with <code>a % 1</code>, <code>b % 1</code>, and <code>clk % 0</code>.</p>
 <h2 id="connecting-to-circuit-outputs"><a class="header" href="#connecting-to-circuit-outputs">Connecting to Circuit Outputs</a></h2>
 <pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
 </span><span class="boring">fn main() {
@@ -300,10 +300,12 @@ circuit.unify(s, s_out);
 }
 fn main() {
     let ha = half_adder();
-    println!("{}", RsfqlibSpice::generate(&amp;ha));
+    design![&amp;ha].print(RsfqlibSpice);
 }</code></pre>
 <p>The <code>half_adder()</code> function returns a fully constructed <code>Circuit</code> object.<br>This object is parameterized by the number of inputs, counter inputs, outputs, and counter outputs:<br><code>Circuit&lt;3, 0, 2, 0&gt;</code>.</p>
-<p>The <code>RsfqlibSpice::generate()</code> function converts the circuit into a SPICE-format netlist based on the RSFQlib.<br>You can use a different backend (e.g. <code>RsfqlibVerilog</code>) to export in other formats.</p>
+<p>The <code>design![&amp;ha]</code> macro creates a <code>Design</code>, runs timing checks, and passes the checked circuit to the backend.
+<code>print(RsfqlibSpice)</code> prints a SPICE-format netlist based on the RSFQlib.
+You can use a different backend (e.g. <code>RsfqlibVerilog</code> or <code>LogicalVerilog</code>) to export in other formats.</p>
 <hr>
 <h2 id="running-the-program"><a class="header" href="#running-the-program">Running the Program</a></h2>
 <p>You can generate the SPICE netlist by compiling and running the program:</p>
@@ -313,17 +315,17 @@ fn main() {
 <h2 id="output-example-spice-netlist"><a class="header" href="#output-example-spice-netlist">Output: Example SPICE Netlist</a></h2>
 <p>Here is the SPICE netlist generated by the example:</p>
 <pre><code class="language-text">.subckt HalfAdder a b clk c s
-XSPLIT1 a _XSPLIT1_q1 _XSPLIT1_q2 THmitll_SPLIT
-XSPLIT2 b _XSPLIT2_q1 _XSPLIT2_q2 THmitll_SPLIT
-XSPLIT3 clk clk_1 _XSPLIT3_q2 THmitll_SPLIT
-XAND4 _XSPLIT1_q1 _XSPLIT2_q1 clk_1 c THmitll_AND
-XXOR5 _XSPLIT1_q2 _XSPLIT2_q2 _XSPLIT3_q2 s THmitll_XOR
+XSPLIT1 a _SPLIT1_q1 _SPLIT1_q2 THmitll_SPLIT
+XSPLIT2 b _SPLIT2_q1 _SPLIT2_q2 THmitll_SPLIT
+XSPLIT3 clk _SPLIT3_q1 _SPLIT3_q2 THmitll_SPLIT
+XAND4 _SPLIT1_q1 _SPLIT2_q1 _SPLIT3_q1 c THmitll_AND2
+XXOR5 _SPLIT1_q2 _SPLIT2_q2 _SPLIT3_q2 s THmitll_XOR
 .ends
 </code></pre>
 <ul>
 <li>Each logic gate is named sequentially (e.g., <code>XAND4</code>, <code>XXOR5</code>)</li>
-<li>Wires starting with an underscore (e.g., <code>_XSPLIT1_q1</code>) are automatically generated</li>
-<li>Labels like <code>clk_1</code> and <code>s</code> appear as specified in the code</li>
+<li>Wires starting with an underscore (e.g., <code>_SPLIT1_q1</code>) are automatically generated</li>
+<li>Labels like <code>c</code> and <code>s</code> appear as specified by the circuit outputs</li>
 </ul>
 <hr>
 <h2 id="summary"><a class="header" href="#summary">Summary</a></h2>
@@ -338,8 +340,8 @@ XXOR5 _XSPLIT1_q2 _XSPLIT2_q2 _XSPLIT3_q2 s THmitll_XOR
 <h1 id="circuit"><a class="header" href="#circuit">Circuit</a></h1>
 <h2 id="overview"><a class="header" href="#overview">Overview</a></h2>
 <p>The <code>Circuit</code> struct corresponds to a subcircuit in SPICE and serves as the main object for constructing SFQ circuits in RustSFQ.</p>
-<p>The <code>Circuit</code> instance holds all the necessary information to generate a netlist.</p>
-<p>By passing a reference to a backend’s <code>generate()</code> function, you can convert the circuit into a string in formats such as SPICE or Verilog, depending on the backend.</p>
+<p>The <code>Circuit</code> instance holds the gate and wire information needed to build a netlist.</p>
+<p>Netlist generation is performed through <code>Design</code>. A <code>Design</code> runs timing checks for its circuits and then invokes the selected backend, such as SPICE or Verilog.</p>
 <hr>
 <h2 id="type-parameter"><a class="header" href="#type-parameter">Type Parameter</a></h2>
 <p>A <code>Circuit</code> is parameterized by four compile-time constants representing the number of I/O channels:</p>
@@ -387,16 +389,29 @@ This function defines the structure of the circuit by specifying its I/O ports a
 <h2 id="functions"><a class="header" href="#functions">Functions</a></h2>
 <p>To construct a circuit, a <code>Circuit</code> <strong>instance</strong> provides the following functions:</p>
 <h3 id="logic-gates"><a class="header" href="#logic-gates">Logic Gates</a></h3>
-<p>The <code>and()</code> function adds an AND gate to the circuit.
-The <code>and_labeled()</code> is a convenience function that combines <code>and()</code> with <code>label()</code>, allowing you to define the gate and assign a label to its output wire in a single step.</p>
+<p>The <code>and()</code> function adds an AND gate to the circuit.</p>
 <pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
 </span><span class="boring">fn main() {
-</span>pub fn and(&amp;self, a: Wire, b: Wire, clk: Wire) -&gt; Wire
-pub fn and_labeled(&amp;self, a: Wire, b: Wire, clk: Wire, label: &amp;str) -&gt; Wire
+</span>pub fn and(&amp;mut self, a: OrderedWire, b: OrderedWire, clk: OrderedWire) -&gt; Wire
+pub fn and_p(&amp;mut self, a: Wire, b: Wire, clk: Wire) -&gt; Wire
 <span class="boring">}</span></code></pre>
 <p>This function takes ownership of the input wires: <code>a</code>, <code>b</code>, and <code>clk</code>.
 After being passed into the function, these wire values cannot be used again elsewhere in the program.</p>
-<p>The function returns a new <code>Wire</code> that represents the output of the AND gate.</p>
+<p>The function returns a new <code>Wire</code> that represents the output of the AND gate.
+Clocked gates take <code>OrderedWire</code> values. Use the <code>%</code> operator to attach the local order:</p>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>let q = circuit.and(a % 1, b % 1, clk % 0);
+<span class="boring">}</span></code></pre>
+<p>In normal user code, you do not need to name the <code>OrderedWire</code> type directly; it is produced by the <code>%</code> operator.</p>
+<p>Timing constraints are generated from smaller order values to larger order values. Equal order values mean there is no ordering constraint between those inputs.</p>
+<p>For the common pipeline case, use the <code>_p</code> variants:</p>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>let q = circuit.and_p(a, b, clk);
+<span class="boring">}</span></code></pre>
+<p><code>and_p(a, b, clk)</code> is shorthand for <code>and(a % 1, b % 1, clk % 0)</code>. The same pattern is available for <code>or_p</code>, <code>xor_p</code>, <code>not_p</code>, <code>xnor_p</code>, and <code>dff_p</code>.</p>
+<p>Use the explicit ordered form when a gate needs a timing relation other than “clock first, data second”.</p>
 <hr>
 <p>Other logic and routing gates (OR, XOR, XNOR, NOT, DFF, NDRO, JTL, BUFF, MERGE, and ZERO_ASYNC) are provided as similar functions. While the number of their input wires may differ, all of these functions return a single <code>Wire</code> corresponding to the gate’s output.</p>
 <hr>
@@ -405,7 +420,6 @@ After being passed into the function, these wire values cannot be used again els
 <pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
 </span><span class="boring">fn main() {
 </span>pub fn split(&amp;mut self, a: Wire) -&gt; (Wire, Wire)
-pub fn split_labeled(&amp;mut self, a: Wire, label1: &amp;str, label2: &amp;str) -&gt; (Wire, Wire)
 <span class="boring">}</span></code></pre>
 <p>The function takes one input <code>Wire</code> and returns a tuple of two new <code>Wire</code> instances.</p>
 <p>This is necessary whenever the same signal needs to be used as input to multiple gates, ensuring that each use has its own distinct <code>Wire</code> object.</p>
@@ -415,11 +429,8 @@ pub fn split_labeled(&amp;mut self, a: Wire, label1: &amp;str, label2: &amp;str)
 <pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
 </span><span class="boring">fn main() {
 </span>pub fn cbuff(&amp;mut self, q: CounterWire) -&gt; CounterWire
-pub fn cbuff_labeled(&amp;mut self, q: CounterWire, label: &amp;str) -&gt; CounterWire
 pub fn csplit(&amp;mut self, q1: CounterWire) -&gt; (Wire, CounterWire)
-pub fn csplit_labeled(&amp;mut self, q1: CounterWire, label_q2: &amp;str, label_a: &amp;str) -&gt; (Wire, CounterWire) 
 pub fn csplit2(&amp;mut self, q1: CounterWire, q2: CounterWire) -&gt; CounterWire 
-pub fn csplit2_labeled(&amp;mut self, q1: CounterWire, q2: CounterWire, label: &amp;str) -&gt; CounterWire
 <span class="boring">}</span></code></pre>
 <p>The <code>cbuff()</code> function takes a <code>CounterWire</code> representing the <strong>output</strong> of a BUFF gate then returns a new <code>CounterWire</code> representing the <strong>input</strong> of the gate.</p>
 <p>The <code>csplit()</code> function takes <strong>one</strong> <code>CounterWire</code> representing the <strong>one output</strong> of a SPLIT gate then returns a tuple of a new <code>Wire</code> representing <strong>the other output</strong> of the gate and a new <code>CounterWire</code> representing the <strong>input</strong> of the gate.</p>
@@ -480,10 +491,20 @@ pub fn csplit2_labeled(&amp;mut self, q1: CounterWire, q2: CounterWire, label: &
 <hr>
 <h3 id="labeling"><a class="header" href="#labeling">Labeling</a></h3>
 <p>You can assign an explicit label to a wire using the <code>label()</code> function.</p>
-<p>This function is defined generically for both <code>Wire</code> and <code>CounterWire</code>, meaning that <code>T</code> can be either type:</p>
+<p>For a <code>Wire</code>, call:</p>
 <pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
 </span><span class="boring">fn main() {
-</span>pub fn label&lt;T&gt;(&amp;mut self, wire: &amp;T, label: &amp;str)
+</span>pub fn label(&amp;mut self, wire: &amp;Wire, label: &amp;str)
+<span class="boring">}</span></code></pre>
+<p>For a <code>CounterWire</code>, call:</p>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub fn clabel(&amp;mut self, cwire: &amp;CounterWire, label: &amp;str)
+<span class="boring">}</span></code></pre>
+<p>You can also label a wire inline and keep ownership of it:</p>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>let q = circuit.buff(a).label("q", &amp;mut circuit);
 <span class="boring">}</span></code></pre>
 <p>The function takes a <strong>reference</strong> to the wire, <strong>so ownership is not moved</strong>.</p>
 <p>Explicit labels must not begin with an underscore to avoid conflicts with automatically generated labels.</p>
@@ -491,8 +512,8 @@ pub fn csplit2_labeled(&amp;mut self, q1: CounterWire, q2: CounterWire, label: &
 <p>RustSFQ does not check for collisions among explicitly assigned labels; it is the user’s responsibility to ensure uniqueness.</p>
 <hr>
 <h2 id="exporting"><a class="header" href="#exporting">Exporting</a></h2>
-<p>By passing a reference of <code>Circuit</code> instance into a backend’s <code>generate()</code> function, you can convert the circuit into a backend-specific string representation.</p>
-<p>The resulting string can be printed to standard output to obtain the final netlist.</p>
+<p>Use <code>Design</code> to check timing constraints and generate backend-specific output.</p>
+<p><code>design![...]</code> accepts circuits in subcircuit-to-parent order. This is important when a circuit instantiates another circuit, because the timing constraints of the subcircuit are needed before checking the parent.</p>
 <pre class="playground"><code class="language-rust">use rust_sfq::*;
 
 fn half_adder() -&gt; Circuit&lt;3, 0, 2, 0&gt; { ... }
@@ -501,14 +522,320 @@ fn full_adder(ha: &amp;Circuit&lt;3, 0, 2, 0&gt;) -&gt; Circuit&lt;4, 0, 2, 0&gt
 fn main() {
     let half_adder = half_adder();
     let full_adder = full_adder(&amp;half_adder);
-    
-    type Backend = RsfqlibSpice;
-    println!("{}", Backend::generate(&amp;half_adder));
-    println!("{}", Backend::generate(&amp;full_adder));
+
+    design![&amp;half_adder, &amp;full_adder].print(RsfqlibSpice);
 }</code></pre>
+<p>If you need the generated string instead of printing it directly, use <code>generate()</code>:</p>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>let netlist = design![&amp;half_adder, &amp;full_adder].generate(RsfqlibSpice);
+<span class="boring">}</span></code></pre>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="timing-model"><a class="header" href="#timing-model">Timing Model</a></h1>
+<h2 id="overview-1"><a class="header" href="#overview-1">Overview</a></h2>
+<p>SFQ circuits usually operate as gate-level pipelines. However, by controlling the arrival order of data and clock pulses, the same gates can also be used in a combinational style.</p>
+<p>RustSFQ uses an arrival-order-based timing model so that designers can describe the intended behavior of arbitrary SFQ circuits while still keeping this flexibility.
+RustSFQ also provides a <strong>cycle-level</strong> simulation environment based on this timing model.</p>
+<h2 id="assumptions"><a class="header" href="#assumptions">Assumptions</a></h2>
+<p>RustSFQ models timing under the following assumptions:</p>
+<ul>
+<li>The whole circuit is driven by a single clock source with a fixed frequency.</li>
+<li>The start time of a cycle may differ from gate to gate. For each gate, a cycle is measured from the earliest pulse that can arrive at that gate.</li>
+<li>A logical value is represented by the presence or absence of a pulse. No pulse means <code>0</code>; one or more pulses mean <code>1</code>. In particular, two or more pulses are treated the same as one pulse.</li>
+</ul>
+<h2 id="example-1"><a class="header" href="#example-1">Example 1</a></h2>
+<p>The source code and simulation code for this example are available under <code>samples/timings</code>.</p>
+<p>Consider the following circuit, which consists of an OR gate followed by a NOT gate.</p>
+<p><img src="figures/nor-schem.webp" alt="Schematic of a NOR circuit built from an OR gate followed by a NOT gate"></p>
+<h3 id="pipelined-version"><a class="header" href="#pipelined-version">Pipelined Version</a></h3>
+<p>Because OR and NOT gates are clock-synchronous gates, they are commonly operated as a two-stage pipeline.
+In RustSFQ, this can be written as follows:</p>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>fn nor_pipelined() -&gt; Circuit&lt;3, 0, 1, 0&gt; {
+    let inputs = ["a", "b", "clk"];
+    let outputs = ["y"];
+    let (mut ckt, [a, b, clk], [], [y_out], []) =
+        Circuit::create(inputs, [], outputs, [], "NorPipelined");
+
+    let (clk1, clk2) = ckt.split(clk);
+    ckt.label(&amp;clk1, "clk1");
+    // pipelined
+    let x = ckt.or(a % 1, b % 1, clk1 % 0).label("x", &amp;mut ckt);
+
+    ckt.label(&amp;clk2, "clk2");
+    // pipelined
+    let y = ckt.not(x % 1, clk2 % 0);
+
+    ckt.unify(y, y_out);
+
+    return ckt;
+}
+<span class="boring">}</span></code></pre>
+<p>Both the <code>or</code> and <code>not</code> gates specify that the clock pulse arrives before the data input pulses.
+The <code>%</code> operator attaches an arrival-order number to each input.
+Only the relative order matters; these numbers are not physical delay values.</p>
+<p>Run the cycle-level logical simulation with:</p>
+<pre><code class="language-shell">cd samples/timings/logical
+cargo run logical &gt; modules.v
+iverilog -g2012 -s top -I ../../../lib/logical/ nor-p-test.sv
+./a.out
+gtkwave nor-p-test.vcd
+</code></pre>
+<p>The simulation result is shown below.
+The intermediate signal <code>x = a | b</code> is delayed by one cycle from <code>a</code> and <code>b</code>, and the output <code>y = ~x</code> is delayed by one more cycle.</p>
+<p><img src="figures/nor-p-logical.png" alt="Cycle-level logical simulation of the pipelined NOR circuit showing x delayed by one cycle and y delayed by two cycles"></p>
+<p>Next, run the analog simulation with:</p>
+<pre><code class="language-shell">cd samples/timings/spice
+cargo run spice &gt; modules.cir
+josim-cli -o nor-p-test.csv nor-p-test.cir
+python josim-plot2.py nor-p-test.csv -t stacked
+</code></pre>
+<p>The result is:</p>
+<p><img src="figures/nor-p-test.webp" alt="Analog simulation waveform of the pipelined NOR circuit with gate-local cycles highlighted"></p>
+<p>The top four traces show the inputs and output of the OR gate, and the bottom three traces show the input and output of the NOT gate.
+The white boxes indicate the cycle boundaries for each gate.</p>
+<p>The start time of each gate-local cycle is determined by the first pulse that can arrive at that gate.
+In this example, both gates use the clock signal as the reference, which matches the description <code>let x = ckt.or(a % 1, b % 1, clk1 % 0)</code>.</p>
+<p>The <code>0</code> and <code>1</code> labels in the figure indicate whether a pulse is present in that cycle.
+These values match the cycle-level logical simulation above.</p>
+<h3 id="combinational-version"><a class="header" href="#combinational-version">Combinational Version</a></h3>
+<p>If the clock arrives after the data within a cycle, the gate behaves like part of a combinational circuit.</p>
+<p>This behavior can be described in RustSFQ as follows:</p>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>fn nor_combinational() -&gt; Circuit&lt;3, 0, 1, 0&gt; {
+    let inputs = ["a", "b", "clk"];
+    let outputs = ["y"];
+    let (mut ckt, [a, b, clk], [], [y_out], []) =
+        Circuit::create(inputs, [], outputs, [], "NorCombinational");
+
+    let (clk1, clk2) = ckt.split(clk);
+    ckt.label(&amp;clk1, "clk1");
+    // combinational
+    let x = ckt.or(a % 0, b % 0, clk1 % 1).label("x", &amp;mut ckt);
+
+    ckt.label(&amp;clk2, "clk2");
+    // combinational
+    let y = ckt.not(x % 0, clk2 % 1);
+
+    ckt.unify(y, y_out);
+
+    return ckt;
+}
+<span class="boring">}</span></code></pre>
+<p>The only difference from the pipelined version is the timing specified on the OR and NOT gates.
+In terms of connectivity, both descriptions still correspond to the same circuit schematic.</p>
+<p>The cycle-level logical simulation gives the following result, confirming that the circuit operates combinationally.</p>
+<p><img src="figures/nor-c-logical.png" alt="Cycle-level logical simulation of the combinational NOR circuit showing y changing in the same cycle as a and b"></p>
+<p>Now consider the corresponding analog simulation.
+Timing specifications in RustSFQ describe the intended behavior of the circuit.
+They <strong>do not, by themselves, guarantee</strong> that the physical circuit satisfies those timing constraints.</p>
+<p>For that reason, BUFF gates are inserted on the clock path below to adjust the delay.</p>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>fn nor_combinational() -&gt; Circuit&lt;3, 0, 1, 0&gt; {
+    let inputs = ["a", "b", "clk"];
+    let outputs = ["y"];
+    let (mut ckt, [a, b, clk], [], [y_out], []) =
+        Circuit::create(inputs, [], outputs, [], "NorCombinational");
+
+    let (clk1, clk2) = ckt.split(clk);
+    ckt.label(&amp;clk1, "clk1");
+    let x = ckt.or(a % 0, b % 0, clk1 % 1).label("x", &amp;mut ckt);
+
+    // delays for analog simulation
+    let clk2 = ckt.buff(clk2);
+    let clk2 = ckt.buff(clk2);
+    ckt.label(&amp;clk2, "clk2");
+    let y = ckt.not(x % 0, clk2 % 1);
+
+    ckt.unify(y, y_out);
+
+    return ckt;
+}
+<span class="boring">}</span></code></pre>
+<p>The analog simulation result is:</p>
+<p><img src="figures/nor-c-test.webp" alt="Analog simulation waveform of the combinational NOR circuit with delayed clock paths and gate-local cycles highlighted"></p>
+<p>Cycle start positions differ by gate and are based on the earliest time at which an input signal can arrive at each gate.
+In the first cycle of this example, there are no pulses on <code>A</code>, <code>B</code>, or <code>X</code>, but dashed lines mark where those pulses will appear if they are present.</p>
+<p>The <code>0</code> and <code>1</code> labels in this simulation result match the earlier cycle-level logical simulation.</p>
+<h2 id="example-2-single-cycle-and-multi-cycle-paths"><a class="header" href="#example-2-single-cycle-and-multi-cycle-paths">Example 2: Single-Cycle and Multi-Cycle Paths</a></h2>
+<p>The examples in this section compare a single-cycle path with a multi-cycle version of the same data path.
+Both circuits split the input <code>a</code> into two branches.
+One branch is captured by a DFF to produce <code>x</code>; the other branch is used as the second input of an AND gate.</p>
+<p><img src="figures/single-multi-schem.webp" alt="Schematic shared by the single-cycle and multi-cycle examples: a DFF path and a bypass path from a split input meet at an AND gate"></p>
+<h3 id="single-cycle-path"><a class="header" href="#single-cycle-path">Single-Cycle Path</a></h3>
+<p>In the single-cycle version, the second branch, <code>a2</code>, has no explicit cycle delay.
+It is consumed by the pipelined AND gate in the usual way.
+The <code>_p</code> helpers describe the ordinary pipelined arrival order: the clock arrives before each data input.</p>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>fn single_cycle_path() -&gt; Circuit&lt;2, 0, 1, 0&gt; {
+    let inputs = ["a", "clk"];
+    let outputs = ["y"];
+    let (mut ckt, [a, clk], [], [y_out], []) =
+        Circuit::create(inputs, [], outputs, [], "SingleCyclePath");
+
+    let (a1, a2) = ckt.split(a);
+    ckt.label(&amp;a1, "a1");
+    ckt.label(&amp;a2, "a2");
+
+    let (clk1, clk2) = ckt.split(clk);
+    ckt.label(&amp;clk1, "clk1");
+    let x = ckt.dff_p(a1, clk1);
+    ckt.label(&amp;x, "x");
+
+    ckt.label(&amp;clk2, "clk2");
+    let y = ckt.and_p(x, a2, clk2);
+    let y = ckt.jtl(y);
+
+    ckt.unify(y, y_out);
+
+    ckt
+}
+<span class="boring">}</span></code></pre>
+<p>The cycle-level logical simulation shows the values of <code>a</code>, <code>x</code>, and <code>y</code> for the single-cycle path.
+The numbers in the waveform identify the input values associated with each cycle in which the AND output is <code>1</code>.</p>
+<p><img src="figures/single-cycle-logical.png" alt="Cycle-level logical simulation of the single-cycle path"></p>
+<p>The corresponding analog simulation shows the pulse waveforms at the input, DFF output, bypass path, clock branches, and output.</p>
+<p><img src="figures/single-cycle-test.webp" alt="Analog simulation waveform of the single-cycle path"></p>
+<h3 id="multi-cycle-path"><a class="header" href="#multi-cycle-path">Multi-Cycle Path</a></h3>
+<p>The multi-cycle version delays the <code>a2</code> branch by two additional cycles before it reaches the same AND gate.
+For example, this can model a very long interconnect whose signal propagation takes a substantial amount of time.</p>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>fn multi_cycle_path() -&gt; Circuit&lt;2, 0, 1, 0&gt; {
+    let inputs = ["a", "clk"];
+    let outputs = ["y"];
+    let (mut ckt, [a, clk], [], [y_out], []) =
+        Circuit::create(inputs, [], outputs, [], "MultiCyclePath");
+
+    let (a1, a2) = ckt.split(a);
+    ckt.label(&amp;a1, "a1");
+
+    // Physical delay for analog simulation.
+    let mut a2 = a2;
+    ckt.label(&amp;a2, "a2_start");
+    for _ in 0..32 {
+        a2 = ckt.buff(a2);
+    }
+    ckt.label(&amp;a2, "a2_end");
+
+    // Cycle delay for logical simulation.
+    ckt.add_delay(&amp;a2, 2);
+
+    let (clk1, clk2) = ckt.split(clk);
+    ckt.label(&amp;clk1, "clk1");
+    let x = ckt.dff_p(a1, clk1);
+    let x = ckt.buff(x);
+    let x = ckt.buff(x);
+    ckt.label(&amp;x, "x");
+
+    ckt.label(&amp;clk2, "clk2");
+    let y = ckt.and_p(x, a2, clk2);
+    let y = ckt.jtl(y);
+
+    ckt.unify(y, y_out);
+
+    ckt
+}
+<span class="boring">}</span></code></pre>
+<p><code>add_delay(&amp;a2, 2)</code> describes a two-cycle delay in RustSFQ’s timing model.
+The cycle-level logical backend represents it with two additional registers.</p>
+<p>The BUFF chain is separate from the timing constraint. It supplies an actual physical delay for analog simulation, where the <code>a2_start</code> and <code>a2_end</code> labels make the delayed path easy to inspect.
+Timing annotations state the intended cycle-level behavior; physical buffers are still needed to make the analog circuit satisfy that intent.</p>
+<p>The logical simulation therefore differs from the single-cycle case.
+For each output pulse on <code>y</code>, the corresponding value of <code>a</code> is from three cycles earlier: one cycle of pipelining plus the two additional cycles.</p>
+<p><img src="figures/multi-cycle-logical.png" alt="Cycle-level logical simulation of the multi-cycle path"></p>
+<p>The analog waveform confirms that the BUFF chain delays the <code>a2</code> path from <code>a2_start</code> to <code>a2_end</code> before it reaches the AND gate.</p>
+<p><img src="figures/multi-cycle-test.webp" alt="Analog simulation waveform of the multi-cycle path, including the delayed a2 branch"></p>
+<h2 id="example-3-clock-between-data-arrivals"><a class="header" href="#example-3-clock-between-data-arrivals">Example 3: Clock Between Data Arrivals</a></h2>
+<p>The arrival order at a clocked gate need not be strictly pipelined or strictly combinational.
+This example uses an OR gate whose first data input, <code>x</code>, arrives before the clock, while its second data input, <code>y1</code>, arrives after the clock:</p>
+<pre><code class="language-text">x &lt; clk2 &lt; y1
+</code></pre>
+<p>The circuit first computes <code>x = a &amp; b</code> in a combinational style. It then feeds <code>x</code> and the feedback signal <code>y1</code> into the OR gate, whose output is split into the circuit output <code>y</code> and the feedback path.</p>
+<p><img src="figures/clock-between-schem.webp" alt="Schematic of the clock-between-data example, with x arriving before clk2 and feedback signal y1 arriving afterward"></p>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>fn clock_between_data() -&gt; Circuit&lt;3, 0, 1, 0&gt; {
+    let inputs = ["a", "b", "clk"];
+    let outputs = ["y"];
+    let (mut ckt, [a, b, clk], [], [y_out], []) =
+        Circuit::create(inputs, [], outputs, [], "ClockBetweenData");
+
+    let (clk1, clk2) = ckt.split(clk);
+    ckt.label(&amp;clk1, "clk1");
+
+    let x = ckt.and(a % 0, b % 0, clk1 % 1).label("x", &amp;mut ckt);
+
+    // Delay clk2 for analog simulation.
+    let mut clk2 = clk2;
+    for _ in 0..5 {
+        clk2 = ckt.buff(clk2);
+    }
+    ckt.label(&amp;clk2, "clk2");
+
+    let (y1, y1_out) = ckt.gen_loop("y1");
+
+    // x arrives before the clock, while y1 arrives after it.
+    let y0 = ckt.or(x % 0, y1 % 2, clk2 % 1);
+    ckt.label(&amp;y0, "y0");
+
+    let (y, y1) = ckt.split(y0);
+    ckt.unify(y, y_out);
+    ckt.unify(y1, y1_out);
+
+    ckt
+}
+<span class="boring">}</span></code></pre>
+<p>The arrival orders on the OR gate express the relationship directly: <code>x % 0</code> arrives first, <code>clk2 % 1</code> arrives next, and <code>y1 % 2</code> arrives last.
+This is neither the usual pipeline order, where the clock is first, nor the combinational order, where the clock is last.</p>
+<p>The cycle-level logical simulation shows the resulting feedback behavior.</p>
+<p><img src="figures/clock-between-logical.png" alt="Cycle-level logical simulation of the clock-between-data example"></p>
+<p>For the analog simulation, the five BUFF gates on the <code>clk2</code> path provide the physical clock delay needed to realize this arrival order.
+The waveform shows <code>x</code>, the delayed clock, <code>y1</code>, and <code>y0</code> in their intended sequence.</p>
+<p><img src="figures/clock-between-test.webp" alt="Analog simulation waveform of the clock-between-data example with x, delayed clock clk2, feedback y1, and output y0"></p>
+<h2 id="example-4-unsatisfiable-timing-constraints"><a class="header" href="#example-4-unsatisfiable-timing-constraints">Example 4: Unsatisfiable Timing Constraints</a></h2>
+<p>RustSFQ rejects a circuit when its requested <strong>arrival orders within a cycle</strong> cannot be satisfied.
+The following example resembles the previous feedback circuit, but it requires the feedback signal <code>y1</code> to arrive before <code>clk2</code>:</p>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>fn unsatisfiable_timing() -&gt; Circuit&lt;3, 0, 1, 0&gt; {
+    let inputs = ["a", "b", "clk"];
+    let outputs = ["y"];
+    let (mut ckt, [a, b, clk], [], [y_out], []) =
+        Circuit::create(inputs, [], outputs, [], "UnsatisfiableTiming");
+
+    let (clk1, clk2) = ckt.split(clk);
+    ckt.label(&amp;clk1, "clk1");
+
+    let x = ckt.and(a % 0, b % 0, clk1 % 1).label("x", &amp;mut ckt);
+
+    let (y1, y1_out) = ckt.gen_loop("y1");
+
+    // y1 is required before clk2.
+    let y0 = ckt.or(x % 0, y1 % 0, clk2 % 1);
+
+    let (y, y1) = ckt.split(y0);
+    ckt.unify(y, y_out);
+    ckt.unify(y1, y1_out);
+
+    ckt
+}
+<span class="boring">}</span></code></pre>
+<p><code>y1 % 0</code> requires <code>y1</code> to arrive before <code>clk2 % 1</code>. However, <code>y1</code> is produced from <code>y0</code>, and the OR gate cannot produce <code>y0</code> until <code>clk2</code> arrives.
+The requested arrival order is therefore contradictory.</p>
+<p>Generate this circuit separately from the valid examples:</p>
+<pre><code class="language-shell">cd samples/timings
+cargo run invalid
+</code></pre>
+<p>RustSFQ stops before backend generation and reports <code>Timing constraints are unsatisfiable</code>.
+To make the feedback design valid, add an intentional multi-cycle delay on the feedback path or revise the arrival-order constraints.</p>
 <div style="break-before: page; page-break-before: always;"></div>
 <h1 id="wire-and-counterwire"><a class="header" href="#wire-and-counterwire">Wire and CounterWire</a></h1>
-<h2 id="overview-1"><a class="header" href="#overview-1">Overview</a></h2>
+<h2 id="overview-2"><a class="header" href="#overview-2">Overview</a></h2>
 <p><code>Wire</code> and <code>CounterWire</code> represent electrical nets in a netlist and are used to describe the connections between gates within a circuit.</p>
 <p>A <code>Wire</code> appears when constructing a circuit in a forward direction. It represents a net that has <strong>already been driven</strong>, but has <strong>not yet been received</strong>.<br>A <code>CounterWire</code> is used when constructing circuits in a counter-flow manner, such as in counter-flow clocking. It represents a net that has <strong>already been received</strong>, but has <strong>not yet been driven</strong>.</p>
 <p>These objects are governed by Rust’s ownership system, which ensures that each wire has exactly <strong>one driver and one receiver</strong>.</p>
@@ -568,32 +895,39 @@ println!("{:?}", c.type_id());
 <p>This mechanism ensures correctness even in subtle or intentionally suppressed cases.</p>
 <div style="break-before: page; page-break-before: always;"></div>
 <h1 id="available-gates-and-backends"><a class="header" href="#available-gates-and-backends">Available Gates and Backends</a></h1>
-<h2 id="compatibility-table-as-of-version-012"><a class="header" href="#compatibility-table-as-of-version-012">Compatibility table (as of version 0.1.2)</a></h2>
+<h2 id="compatibility-table-as-of-version-103"><a class="header" href="#compatibility-table-as-of-version-103">Compatibility table (as of version 1.0.3)</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
-<tr><th>Gate</th><th style="text-align: center">RsfqlibSpice</th><th style="text-align: center">RsfqlibVerilog</th></tr>
+<tr><th>Gate</th><th style="text-align: center">LogicalVerilog</th><th style="text-align: center">RsfqlibSpice</th><th style="text-align: center">RsfqlibVerilog</th></tr>
 </thead>
 <tbody>
-<tr><td>JTL</td><td style="text-align: center">✅</td><td style="text-align: center">✅</td></tr>
-<tr><td>SPLIT</td><td style="text-align: center">✅</td><td style="text-align: center">✅</td></tr>
-<tr><td>MERGE</td><td style="text-align: center">✅</td><td style="text-align: center">✅</td></tr>
-<tr><td>AND</td><td style="text-align: center">✅</td><td style="text-align: center">✅</td></tr>
-<tr><td>OR</td><td style="text-align: center">✅</td><td style="text-align: center">✅</td></tr>
-<tr><td>XOR</td><td style="text-align: center">✅</td><td style="text-align: center">✅</td></tr>
-<tr><td>NOT</td><td style="text-align: center">✅</td><td style="text-align: center">✅</td></tr>
-<tr><td>XNOR</td><td style="text-align: center">✅</td><td style="text-align: center">✅</td></tr>
-<tr><td>DFF</td><td style="text-align: center">✅</td><td style="text-align: center">✅</td></tr>
-<tr><td>NDRO</td><td style="text-align: center">✅</td><td style="text-align: center">✅</td></tr>
-<tr><td>BUFF</td><td style="text-align: center">✅</td><td style="text-align: center">✅</td></tr>
-<tr><td>ZERO_ASYNC</td><td style="text-align: center">✅</td><td style="text-align: center">✅</td></tr>
-<tr><td>TERMINATE</td><td style="text-align: center">✅</td><td style="text-align: center">✅</td></tr>
+<tr><td>JTL</td><td style="text-align: center">✅</td><td style="text-align: center">✅</td><td style="text-align: center">✅</td></tr>
+<tr><td>SPLIT</td><td style="text-align: center">✅</td><td style="text-align: center">✅</td><td style="text-align: center">✅</td></tr>
+<tr><td>MERGE</td><td style="text-align: center">✅</td><td style="text-align: center">✅</td><td style="text-align: center">✅</td></tr>
+<tr><td>AND</td><td style="text-align: center">✅</td><td style="text-align: center">✅</td><td style="text-align: center">✅</td></tr>
+<tr><td>OR</td><td style="text-align: center">✅</td><td style="text-align: center">✅</td><td style="text-align: center">✅</td></tr>
+<tr><td>XOR</td><td style="text-align: center">✅</td><td style="text-align: center">✅</td><td style="text-align: center">✅</td></tr>
+<tr><td>NOT</td><td style="text-align: center">✅</td><td style="text-align: center">✅</td><td style="text-align: center">✅</td></tr>
+<tr><td>XNOR</td><td style="text-align: center">✅</td><td style="text-align: center">✅</td><td style="text-align: center">✅</td></tr>
+<tr><td>DFF</td><td style="text-align: center">✅</td><td style="text-align: center">✅</td><td style="text-align: center">✅</td></tr>
+<tr><td>NDRO</td><td style="text-align: center">✅</td><td style="text-align: center">✅</td><td style="text-align: center">✅</td></tr>
+<tr><td>BUFF</td><td style="text-align: center">✅</td><td style="text-align: center">✅</td><td style="text-align: center">✅</td></tr>
+<tr><td>ZERO_ASYNC</td><td style="text-align: center">✅</td><td style="text-align: center">✅</td><td style="text-align: center">✅</td></tr>
+<tr><td>TERMINATE</td><td style="text-align: center">✅</td><td style="text-align: center">✅</td><td style="text-align: center">✅</td></tr>
 </tbody>
 </table>
 </div>
 <h2 id="backends"><a class="header" href="#backends">Backends</a></h2>
+<p>Backends are selected when generating a <code>Design</code>:</p>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>let netlist = design![&amp;circuit].generate(RsfqlibSpice);
+<span class="boring">}</span></code></pre>
 <ul>
-<li>RSFQlib (<a href="https://github.com/sunmagnetics/RSFQlib">https://github.com/sunmagnetics/RSFQlib</a>)</li>
+<li><code>LogicalVerilog</code>: simple logical Verilog output for simulation</li>
+<li><code>RsfqlibSpice</code>: SPICE output using RSFQlib (<a href="https://github.com/sunmagnetics/RSFQlib">https://github.com/sunmagnetics/RSFQlib</a>)</li>
+<li><code>RsfqlibVerilog</code>: Verilog output using RSFQlib cell names</li>
 </ul>
 <div style="break-before: page; page-break-before: always;"></div>
 <h1 id="for-rust-beginners"><a class="header" href="#for-rust-beginners">For Rust Beginners</a></h1>
@@ -864,7 +1198,7 @@ println!("First: {}", tup.0); // 42
 <li>
 <p>Add it to your <code>Cargo.toml</code> dependencies:</p>
 <pre><code class="language-toml">[dependencies]
-rust_sfq = "0.1"
+rust_sfq = "1.0.3"
 </code></pre>
 </li>
 <li>
@@ -885,7 +1219,7 @@ rust_sfq = "0.1"
 <p>If you prefer more explicit imports:</p>
 <pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
 </span><span class="boring">fn main() {
-</span>use rust_sfq::{Circuit, RsfqlibSpice};
+</span>use rust_sfq::{design, Circuit, RsfqlibSpice};
 <span class="boring">}</span></code></pre>
 
                     </main>

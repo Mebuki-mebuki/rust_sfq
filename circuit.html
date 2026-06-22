@@ -35,10 +35,10 @@
             const path_to_root = "";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "searchindex-234f217d.js";
+            window.path_to_searchindex_js = "searchindex-cf161405.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="toc-5997ffd7.js"></script>
+        <script src="toc-85550d20.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -177,8 +177,8 @@
                         <h1 id="circuit"><a class="header" href="#circuit">Circuit</a></h1>
 <h2 id="overview"><a class="header" href="#overview">Overview</a></h2>
 <p>The <code>Circuit</code> struct corresponds to a subcircuit in SPICE and serves as the main object for constructing SFQ circuits in RustSFQ.</p>
-<p>The <code>Circuit</code> instance holds all the necessary information to generate a netlist.</p>
-<p>By passing a reference to a backend’s <code>generate()</code> function, you can convert the circuit into a string in formats such as SPICE or Verilog, depending on the backend.</p>
+<p>The <code>Circuit</code> instance holds the gate and wire information needed to build a netlist.</p>
+<p>Netlist generation is performed through <code>Design</code>. A <code>Design</code> runs timing checks for its circuits and then invokes the selected backend, such as SPICE or Verilog.</p>
 <hr>
 <h2 id="type-parameter"><a class="header" href="#type-parameter">Type Parameter</a></h2>
 <p>A <code>Circuit</code> is parameterized by four compile-time constants representing the number of I/O channels:</p>
@@ -226,16 +226,29 @@ This function defines the structure of the circuit by specifying its I/O ports a
 <h2 id="functions"><a class="header" href="#functions">Functions</a></h2>
 <p>To construct a circuit, a <code>Circuit</code> <strong>instance</strong> provides the following functions:</p>
 <h3 id="logic-gates"><a class="header" href="#logic-gates">Logic Gates</a></h3>
-<p>The <code>and()</code> function adds an AND gate to the circuit.
-The <code>and_labeled()</code> is a convenience function that combines <code>and()</code> with <code>label()</code>, allowing you to define the gate and assign a label to its output wire in a single step.</p>
+<p>The <code>and()</code> function adds an AND gate to the circuit.</p>
 <pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
 </span><span class="boring">fn main() {
-</span>pub fn and(&amp;self, a: Wire, b: Wire, clk: Wire) -&gt; Wire
-pub fn and_labeled(&amp;self, a: Wire, b: Wire, clk: Wire, label: &amp;str) -&gt; Wire
+</span>pub fn and(&amp;mut self, a: OrderedWire, b: OrderedWire, clk: OrderedWire) -&gt; Wire
+pub fn and_p(&amp;mut self, a: Wire, b: Wire, clk: Wire) -&gt; Wire
 <span class="boring">}</span></code></pre>
 <p>This function takes ownership of the input wires: <code>a</code>, <code>b</code>, and <code>clk</code>.
 After being passed into the function, these wire values cannot be used again elsewhere in the program.</p>
-<p>The function returns a new <code>Wire</code> that represents the output of the AND gate.</p>
+<p>The function returns a new <code>Wire</code> that represents the output of the AND gate.
+Clocked gates take <code>OrderedWire</code> values. Use the <code>%</code> operator to attach the local order:</p>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>let q = circuit.and(a % 1, b % 1, clk % 0);
+<span class="boring">}</span></code></pre>
+<p>In normal user code, you do not need to name the <code>OrderedWire</code> type directly; it is produced by the <code>%</code> operator.</p>
+<p>Timing constraints are generated from smaller order values to larger order values. Equal order values mean there is no ordering constraint between those inputs.</p>
+<p>For the common pipeline case, use the <code>_p</code> variants:</p>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>let q = circuit.and_p(a, b, clk);
+<span class="boring">}</span></code></pre>
+<p><code>and_p(a, b, clk)</code> is shorthand for <code>and(a % 1, b % 1, clk % 0)</code>. The same pattern is available for <code>or_p</code>, <code>xor_p</code>, <code>not_p</code>, <code>xnor_p</code>, and <code>dff_p</code>.</p>
+<p>Use the explicit ordered form when a gate needs a timing relation other than “clock first, data second”.</p>
 <hr>
 <p>Other logic and routing gates (OR, XOR, XNOR, NOT, DFF, NDRO, JTL, BUFF, MERGE, and ZERO_ASYNC) are provided as similar functions. While the number of their input wires may differ, all of these functions return a single <code>Wire</code> corresponding to the gate’s output.</p>
 <hr>
@@ -244,7 +257,6 @@ After being passed into the function, these wire values cannot be used again els
 <pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
 </span><span class="boring">fn main() {
 </span>pub fn split(&amp;mut self, a: Wire) -&gt; (Wire, Wire)
-pub fn split_labeled(&amp;mut self, a: Wire, label1: &amp;str, label2: &amp;str) -&gt; (Wire, Wire)
 <span class="boring">}</span></code></pre>
 <p>The function takes one input <code>Wire</code> and returns a tuple of two new <code>Wire</code> instances.</p>
 <p>This is necessary whenever the same signal needs to be used as input to multiple gates, ensuring that each use has its own distinct <code>Wire</code> object.</p>
@@ -254,11 +266,8 @@ pub fn split_labeled(&amp;mut self, a: Wire, label1: &amp;str, label2: &amp;str)
 <pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
 </span><span class="boring">fn main() {
 </span>pub fn cbuff(&amp;mut self, q: CounterWire) -&gt; CounterWire
-pub fn cbuff_labeled(&amp;mut self, q: CounterWire, label: &amp;str) -&gt; CounterWire
 pub fn csplit(&amp;mut self, q1: CounterWire) -&gt; (Wire, CounterWire)
-pub fn csplit_labeled(&amp;mut self, q1: CounterWire, label_q2: &amp;str, label_a: &amp;str) -&gt; (Wire, CounterWire) 
 pub fn csplit2(&amp;mut self, q1: CounterWire, q2: CounterWire) -&gt; CounterWire 
-pub fn csplit2_labeled(&amp;mut self, q1: CounterWire, q2: CounterWire, label: &amp;str) -&gt; CounterWire
 <span class="boring">}</span></code></pre>
 <p>The <code>cbuff()</code> function takes a <code>CounterWire</code> representing the <strong>output</strong> of a BUFF gate then returns a new <code>CounterWire</code> representing the <strong>input</strong> of the gate.</p>
 <p>The <code>csplit()</code> function takes <strong>one</strong> <code>CounterWire</code> representing the <strong>one output</strong> of a SPLIT gate then returns a tuple of a new <code>Wire</code> representing <strong>the other output</strong> of the gate and a new <code>CounterWire</code> representing the <strong>input</strong> of the gate.</p>
@@ -319,10 +328,20 @@ pub fn csplit2_labeled(&amp;mut self, q1: CounterWire, q2: CounterWire, label: &
 <hr>
 <h3 id="labeling"><a class="header" href="#labeling">Labeling</a></h3>
 <p>You can assign an explicit label to a wire using the <code>label()</code> function.</p>
-<p>This function is defined generically for both <code>Wire</code> and <code>CounterWire</code>, meaning that <code>T</code> can be either type:</p>
+<p>For a <code>Wire</code>, call:</p>
 <pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
 </span><span class="boring">fn main() {
-</span>pub fn label&lt;T&gt;(&amp;mut self, wire: &amp;T, label: &amp;str)
+</span>pub fn label(&amp;mut self, wire: &amp;Wire, label: &amp;str)
+<span class="boring">}</span></code></pre>
+<p>For a <code>CounterWire</code>, call:</p>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub fn clabel(&amp;mut self, cwire: &amp;CounterWire, label: &amp;str)
+<span class="boring">}</span></code></pre>
+<p>You can also label a wire inline and keep ownership of it:</p>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>let q = circuit.buff(a).label("q", &amp;mut circuit);
 <span class="boring">}</span></code></pre>
 <p>The function takes a <strong>reference</strong> to the wire, <strong>so ownership is not moved</strong>.</p>
 <p>Explicit labels must not begin with an underscore to avoid conflicts with automatically generated labels.</p>
@@ -330,8 +349,8 @@ pub fn csplit2_labeled(&amp;mut self, q1: CounterWire, q2: CounterWire, label: &
 <p>RustSFQ does not check for collisions among explicitly assigned labels; it is the user’s responsibility to ensure uniqueness.</p>
 <hr>
 <h2 id="exporting"><a class="header" href="#exporting">Exporting</a></h2>
-<p>By passing a reference of <code>Circuit</code> instance into a backend’s <code>generate()</code> function, you can convert the circuit into a backend-specific string representation.</p>
-<p>The resulting string can be printed to standard output to obtain the final netlist.</p>
+<p>Use <code>Design</code> to check timing constraints and generate backend-specific output.</p>
+<p><code>design![...]</code> accepts circuits in subcircuit-to-parent order. This is important when a circuit instantiates another circuit, because the timing constraints of the subcircuit are needed before checking the parent.</p>
 <pre class="playground"><code class="language-rust">use rust_sfq::*;
 
 fn half_adder() -&gt; Circuit&lt;3, 0, 2, 0&gt; { ... }
@@ -340,11 +359,14 @@ fn full_adder(ha: &amp;Circuit&lt;3, 0, 2, 0&gt;) -&gt; Circuit&lt;4, 0, 2, 0&gt
 fn main() {
     let half_adder = half_adder();
     let full_adder = full_adder(&amp;half_adder);
-    
-    type Backend = RsfqlibSpice;
-    println!("{}", Backend::generate(&amp;half_adder));
-    println!("{}", Backend::generate(&amp;full_adder));
+
+    design![&amp;half_adder, &amp;full_adder].print(RsfqlibSpice);
 }</code></pre>
+<p>If you need the generated string instead of printing it directly, use <code>generate()</code>:</p>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>let netlist = design![&amp;half_adder, &amp;full_adder].generate(RsfqlibSpice);
+<span class="boring">}</span></code></pre>
 
                     </main>
 
@@ -354,7 +376,7 @@ fn main() {
                                 <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/></svg></span>
                             </a>
 
-                            <a rel="next prefetch" href="wire.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                            <a rel="next prefetch" href="timing.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                                 <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M278.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-160 160c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L210.7 256 73.4 118.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l160 160z"/></svg></span>
                             </a>
 
@@ -368,7 +390,7 @@ fn main() {
                         <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/></svg></span>
                     </a>
 
-                    <a rel="next prefetch" href="wire.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                    <a rel="next prefetch" href="timing.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                         <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M278.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-160 160c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L210.7 256 73.4 118.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l160 160z"/></svg></span>
                     </a>
             </nav>
