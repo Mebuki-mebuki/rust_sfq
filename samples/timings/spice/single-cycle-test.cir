@@ -1,0 +1,24 @@
+.include ../../../lib/rsfqlib/spice/all.cir
+.include modules.cir
+
+XTOP a clk y SingleCyclePath
+
+I1      0       11      pwl(0 0 220p 0 222.5p 827.13u 225p 0 320p 0 322.5p 827.13u 325p 0 520p 0 522.5p 827.13u 525p 0 620p 0 622.5p 827.13u 625p 0 720p 0 722.5p 827.13u 725p 0 820p 0 822.5p 827.13u 825p 0 )
+XDC1    11      12      THmitll_DCSFQ
+XJ1     12      a       THmitll_JTL
+
+I2      0       21      pwl(0 0 100p 0 102.5p 827.13u 105p 0 200p 0 202.5p 827.13u 205p 0 300p 0 302.5p 827.13u 305p 0 400p 0 402.5p 827.13u 405p 0 500p 0 502.5p 827.13u 505p 0 600p 0 602.5p 827.13u 605p 0 700p 0 702.5p 827.13u 705p 0 800p 0 802.5p 827.13u 805p 0 900p 0 902.5p 827.13u 905p 0 1000p 0 1002.5p 827.13u 1005p 0 1100p 0 1102.5p 827.13u 1105p 0 )
+XDC2    21      22      THmitll_DCSFQ
+XJ2     22      clk     THmitll_JTL
+
+R0      y       0       2
+
+.tran 0.25p 1200p 0 0.25p
+.print v(a1.XTOP)
+.print v(clk1.XTOP)
+.print v(x.XTOP)
+.print v(a2.XTOP)
+.print v(x.XTOP)
+.print v(clk2.XTOP)
+.print v(y)
+.end

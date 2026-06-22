@@ -1,0 +1,17 @@
+.include THmitll_ALWAYS0_ASYNC_NOA_v3p0_base.cir
+.include THmitll_ALWAYS0_ASYNC_v3p0_base.cir
+.include THmitll_ALWAYS0_SYNC_NOA_v3p0_base.cir
+.include THmitll_ALWAYS0_SYNC_v3p0_base.cir
+.include THmitll_AND2_v3p0_base.cir
+.include THmitll_BUFF_v3p0_base.cir
+.include THmitll_DCSFQ_v3p0_base.cir
+.include THmitll_DFF_v3p0_base.cir
+.include THmitll_JTL_v3p0_base.cir
+.include THmitll_MERGE_v3p0_base.cir
+.include THmitll_NDRO_v3p0_base.cir
+.include THmitll_NOT_v3p0_base.cir
+.include THmitll_OR2_v3p0_base.cir
+.include THmitll_SFQDC_v3p0_base.cir
+.include THmitll_SPLIT_v3p0_base.cir
+.include THmitll_XNOR_v3p0_base.cir
+.include THmitll_XOR_v3p0_base.cir

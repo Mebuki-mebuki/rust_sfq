@@ -1,0 +1,20 @@
+.include ../../../lib/rsfqlib/spice/all.cir
+.include modules.cir
+
+XTOP a b cin clk cout s FullAdder
+
+R0      cout    0       2
+R1      s       0       2
+V0      a       0       pwl(0 0 150p 0 152.5p 827.13u 155p 0 350p 0 352.5p 827.13u 355p 0 550p 0 552.5p 827.13u 555p 0 750p 0 752.5p 827.13u 755p 0 )
+V1      b       0       pwl(0 0 250p 0 252.5p 827.13u 255p 0 350p 0 352.5p 827.13u 355p 0 650p 0 652.5p 827.13u 655p 0 750p 0 752.5p 827.13u 755p 0 )
+V2      cin     0       pwl(0 0 450p 0 452.5p 827.13u 455p 0 550p 0 552.5p 827.13u 555p 0 650p 0 652.5p 827.13u 655p 0 750p 0 752.5p 827.13u 755p 0 )
+VCLK    clk     0       pwl(0 0 100p 0 102.5p 827.13u 105p 0 200p 0 202.5p 827.13u 205p 0 300p 0 302.5p 827.13u 305p 0 400p 0 402.5p 827.13u 405p 0 500p 0 502.5p 827.13u 505p 0 600p 0 602.5p 827.13u 605p 0 700p 0 702.5p 827.13u 705p 0 800p 0 802.5p 827.13u 805p 0 900p 0 902.5p 827.13u 905p 0 1000p 0 1002.5p 827.13u 1005p 0 )
+
+.tran 0.25p 1100p 0 0.25p
+.print v(clk)
+.print v(a)
+.print v(b)
+.print v(cin)
+.print v(cout)
+.print v(s)
+.end

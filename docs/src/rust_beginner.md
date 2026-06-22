@@ -338,7 +338,7 @@ To use an external library (crate), you must:
 
     ```toml
     [dependencies]
-    rust_sfq = "0.1"
+    rust_sfq = "1.0.3"
     ```
 
 2. Then import items from the crate in your code:
@@ -358,5 +358,5 @@ This brings all public items from the crate into scope, including:
 If you prefer more explicit imports:
 
 ```rust
-use rust_sfq::{Circuit, RsfqlibSpice};
+use rust_sfq::{design, Circuit, RsfqlibSpice};
 ```

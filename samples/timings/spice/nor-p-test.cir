@@ -1,0 +1,28 @@
+.include ../../../lib/rsfqlib/spice/all.cir
+.include modules.cir
+
+XTOP a b clk y NorPipelined
+
+I1      0       11      pwl(0 0 370p 0 372.5p 827.13u 375p 0 470p 0 472.5p 827.13u 475p 0 )
+XDC1    11      12      THmitll_DCSFQ
+XJ1     12      a       THmitll_JTL
+
+I2      0       21      pwl(0 0 270p 0 272.5p 827.13u 275p 0 470p 0 472.5p 827.13u 475p 0 )
+XDC2    21      22      THmitll_DCSFQ
+XJ2     22      b       THmitll_JTL
+
+I3      0       31      pwl(0 0 50p 0 52.5p 827.13u 55p 0 150p 0 152.5p 827.13u 155p 0 250p 0 252.5p 827.13u 255p 0 350p 0 352.5p 827.13u 355p 0 450p 0 452.5p 827.13u 455p 0 550p 0 552.5p 827.13u 555p 0 650p 0 652.5p 827.13u 655p 0 )
+XDC3    31      32      THmitll_DCSFQ
+XJ3     32      clk     THmitll_JTL
+
+R0      y       0       2
+
+.tran 0.25p 800p 0 0.25p
+.print v(a)
+.print v(b)
+.print v(clk1.XTOP)
+.print v(x.XTOP)
+.print v(x.XTOP)
+.print v(clk2.XTOP)
+.print v(y)
+.end

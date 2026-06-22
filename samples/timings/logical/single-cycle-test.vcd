@@ -1,0 +1,189 @@
+$date
+	Fri Jun 19 12:52:29 2026
+$end
+$version
+	Icarus Verilog
+$end
+$timescale
+	1s
+$end
+$scope module top $end
+$var wire 1 ! clk $end
+$var wire 1 " y $end
+$var parameter 32 # N $end
+$var reg 1 $ __cycle $end
+$var reg 1 % a $end
+$var reg 12 & patterns [11:0] $end
+$var integer 32 ' cycles [31:0] $end
+$var integer 32 ( i [31:0] $end
+$scope module dut $end
+$var wire 1 $ __cycle $end
+$var wire 1 % a $end
+$var wire 1 ! clk $end
+$var wire 1 " y $end
+$var wire 1 ) x $end
+$var wire 1 * clk2 $end
+$var wire 1 + clk1 $end
+$var wire 1 , a2 $end
+$var wire 1 - a1 $end
+$var reg 1 . a1_d1 $end
+$var reg 1 / a2_d1 $end
+$var reg 1 0 x_d1 $end
+$scope module AND4 $end
+$var wire 1 $ __cycle $end
+$var wire 1 0 a $end
+$var wire 1 / b $end
+$var wire 1 " q $end
+$var wire 1 * clk $end
+$var reg 1 1 a_reg $end
+$var reg 1 2 b_reg $end
+$upscope $end
+$scope module DFF3 $end
+$var wire 1 $ __cycle $end
+$var wire 1 . a $end
+$var wire 1 ) q $end
+$var wire 1 + clk $end
+$var reg 1 3 a_reg $end
+$upscope $end
+$scope module SPLIT1 $end
+$var wire 1 $ __cycle $end
+$var wire 1 % a $end
+$var wire 1 - q1 $end
+$var wire 1 , q2 $end
+$upscope $end
+$scope module SPLIT2 $end
+$var wire 1 $ __cycle $end
+$var wire 1 ! a $end
+$var wire 1 + q1 $end
+$var wire 1 * q2 $end
+$upscope $end
+$upscope $end
+$upscope $end
+$enddefinitions $end
+$comment Show the parameter values. $end
+$dumpall
+b1100 #
+$end
+#0
+$dumpvars
+03
+02
+01
+00
+0/
+0.
+0-
+0,
+1+
+1*
+0)
+b0 (
+b0 '
+b11011110000 &
+0%
+0$
+0"
+1!
+$end
+#2
+b1 (
+b1 '
+1$
+#3
+0$
+#4
+1-
+1,
+1%
+b10 (
+b10 '
+1$
+#5
+0$
+#6
+1)
+1/
+1.
+b11 (
+b11 '
+1$
+#7
+0$
+#8
+1"
+0-
+0,
+0%
+10
+b100 (
+b100 '
+1$
+#9
+0$
+#10
+0"
+0)
+0/
+0.
+1-
+1,
+1%
+b101 (
+b101 '
+1$
+#11
+0$
+#12
+1)
+1/
+1.
+00
+b110 (
+b110 '
+1$
+#13
+0$
+#14
+1"
+10
+b111 (
+b111 '
+1$
+#15
+0$
+#16
+b1000 (
+b1000 '
+1$
+#17
+0$
+#18
+0-
+0,
+0%
+b1001 (
+b1001 '
+1$
+#19
+0$
+#20
+0"
+0)
+0/
+0.
+b1010 (
+b1010 '
+1$
+#21
+0$
+#22
+00
+b1011 (
+b1011 '
+1$
+#23
+0$
+#24
+b1100 (
+b1100 '
+1$
