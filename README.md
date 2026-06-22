@@ -67,7 +67,7 @@ Add this crate to your `Cargo.toml`:
 
 ```toml
 [dependencies]
-rust_sfq = "0.1.3"
+rust_sfq = "1.0.3"
 ```
 
 ## Changelog

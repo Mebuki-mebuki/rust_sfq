@@ -54,3 +54,22 @@ First release of RustSFQ
   - example:
     - old: `let c = circuit.and_labeled(a1 % 1, b1 % 1, clk1 % 0, "c");`
     - new: `let c = circuit.and(a1 % 1, b1 % 1, clk1 % 0).label("c", &mut circuit);`
+
+## [1.0.3] - 2026-06-22
+
+### Changed
+
+- Netlist generation now goes through `Design`. Replace direct backend calls such as `RsfqlibSpice::generate(&circuit)` with `design![&circuit].generate(RsfqlibSpice)` or `design![&circuit].print(RsfqlibSpice)`.
+- `unify()` now updates gate connections directly instead of relying on wire aliases during backend generation.
+
+### Added
+
+- Added timing validation before backend generation, including validation across subcircuit boundaries.
+- Added `Design` and the `design![...]` macro to check timing constraints and generate output for one or more circuits.
+- Added cycle-level timing support to `LogicalVerilog`, including explicit multi-cycle delays through `Circuit::add_delay()`.
+- Added timing-model documentation and runnable examples for pipelined, combinational, single-cycle, multi-cycle, mixed arrival-order, and unsatisfiable-timing cases.
+- Added timing and logical-Verilog regression tests.
+
+### Fixed
+
+- Fixed LogicalVerilog generation for multi-stage register delays.
