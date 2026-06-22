@@ -108,7 +108,8 @@ fn clock_between_data() -> Circuit<3, 0, 1, 0> {
     let (clk1, clk2) = ckt.split(clk);
     ckt.label(&clk1, "clk1");
 
-    let x = ckt.and(a % 1, b % 1, clk1 % 0).label("x", &mut ckt);
+    // combinational
+    let x = ckt.and(a % 0, b % 0, clk1 % 1).label("x", &mut ckt);
 
     // delay clk2
     let mut clk2 = clk2;
@@ -140,7 +141,8 @@ fn unsatisfiable_timing() -> Circuit<3, 0, 1, 0> {
     let (clk1, clk2) = ckt.split(clk);
     ckt.label(&clk1, "clk1");
 
-    let x = ckt.and(a % 1, b % 1, clk1 % 0).label("x", &mut ckt);
+    // combinational
+    let x = ckt.and(a % 0, b % 0, clk1 % 1).label("x", &mut ckt);
 
     let (y1, y1_) = ckt.gen_loop("y1");
 

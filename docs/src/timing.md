@@ -270,3 +270,104 @@ For each output pulse on `y`, the corresponding value of `a` is from three cycle
 The analog waveform confirms that the BUFF chain delays the `a2` path from `a2_start` to `a2_end` before it reaches the AND gate.
 
 ![Analog simulation waveform of the multi-cycle path, including the delayed a2 branch](figures/multi-cycle-test.webp)
+
+## Example 3: Clock Between Data Arrivals
+
+The arrival order at a clocked gate need not be strictly pipelined or strictly combinational.
+This example uses an OR gate whose first data input, `x`, arrives before the clock, while its second data input, `y1`, arrives after the clock:
+
+```text
+x < clk2 < y1
+```
+
+The circuit first computes `x = a & b` in a combinational style. It then feeds `x` and the feedback signal `y1` into the OR gate, whose output is split into the circuit output `y` and the feedback path.
+
+![Schematic of the clock-between-data example, with x arriving before clk2 and feedback signal y1 arriving afterward](figures/clock-between-schem.webp)
+
+```rust
+fn clock_between_data() -> Circuit<3, 0, 1, 0> {
+    let inputs = ["a", "b", "clk"];
+    let outputs = ["y"];
+    let (mut ckt, [a, b, clk], [], [y_out], []) =
+        Circuit::create(inputs, [], outputs, [], "ClockBetweenData");
+
+    let (clk1, clk2) = ckt.split(clk);
+    ckt.label(&clk1, "clk1");
+
+    let x = ckt.and(a % 0, b % 0, clk1 % 1).label("x", &mut ckt);
+
+    // Delay clk2 for analog simulation.
+    let mut clk2 = clk2;
+    for _ in 0..5 {
+        clk2 = ckt.buff(clk2);
+    }
+    ckt.label(&clk2, "clk2");
+
+    let (y1, y1_out) = ckt.gen_loop("y1");
+
+    // x arrives before the clock, while y1 arrives after it.
+    let y0 = ckt.or(x % 0, y1 % 2, clk2 % 1);
+    ckt.label(&y0, "y0");
+
+    let (y, y1) = ckt.split(y0);
+    ckt.unify(y, y_out);
+    ckt.unify(y1, y1_out);
+
+    ckt
+}
+```
+
+The arrival orders on the OR gate express the relationship directly: `x % 0` arrives first, `clk2 % 1` arrives next, and `y1 % 2` arrives last.
+This is neither the usual pipeline order, where the clock is first, nor the combinational order, where the clock is last.
+
+The cycle-level logical simulation shows the resulting feedback behavior.
+
+![Cycle-level logical simulation of the clock-between-data example](figures/clock-between-logical.png)
+
+For the analog simulation, the five BUFF gates on the `clk2` path provide the physical clock delay needed to realize this arrival order.
+The waveform shows `x`, the delayed clock, `y1`, and `y0` in their intended sequence.
+
+![Analog simulation waveform of the clock-between-data example with x, delayed clock clk2, feedback y1, and output y0](figures/clock-between-test.webp)
+
+## Example 4: Unsatisfiable Timing Constraints
+
+RustSFQ rejects a circuit when its requested **arrival orders within a cycle** cannot be satisfied.
+The following example resembles the previous feedback circuit, but it requires the feedback signal `y1` to arrive before `clk2`:
+
+```rust
+fn unsatisfiable_timing() -> Circuit<3, 0, 1, 0> {
+    let inputs = ["a", "b", "clk"];
+    let outputs = ["y"];
+    let (mut ckt, [a, b, clk], [], [y_out], []) =
+        Circuit::create(inputs, [], outputs, [], "UnsatisfiableTiming");
+
+    let (clk1, clk2) = ckt.split(clk);
+    ckt.label(&clk1, "clk1");
+
+    let x = ckt.and(a % 0, b % 0, clk1 % 1).label("x", &mut ckt);
+
+    let (y1, y1_out) = ckt.gen_loop("y1");
+
+    // y1 is required before clk2.
+    let y0 = ckt.or(x % 0, y1 % 0, clk2 % 1);
+
+    let (y, y1) = ckt.split(y0);
+    ckt.unify(y, y_out);
+    ckt.unify(y1, y1_out);
+
+    ckt
+}
+```
+
+`y1 % 0` requires `y1` to arrive before `clk2 % 1`. However, `y1` is produced from `y0`, and the OR gate cannot produce `y0` until `clk2` arrives.
+The requested arrival order is therefore contradictory.
+
+Generate this circuit separately from the valid examples:
+
+```shell
+cd samples/timings
+cargo run invalid
+```
+
+RustSFQ stops before backend generation and reports `Timing constraints are unsatisfiable`.
+To make the feedback design valid, add an intentional multi-cycle delay on the feedback path or revise the arrival-order constraints.
