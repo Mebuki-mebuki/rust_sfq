@@ -145,6 +145,8 @@ dependencies = [
 [[package]]
 name = "rust_sfq"
 version = "1.0.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "f203ccb0f2ccce27d942c42f36e587739d9b225b0e2d8af628fff4f43723bf2b"
 dependencies = [
  "colored",
  "petgraph",
