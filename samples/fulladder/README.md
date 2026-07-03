@@ -12,9 +12,10 @@
 ```shell
 cd logical
 cargo run logical > modules.v
+cargo run logical-testbench > fulladder.sv
 iverilog -g2012 -s top -I ../../../lib/logical/ fulladder.sv 
 ./a.out
-gtkwave fulladder.vcd
+gtkwave FullAdder.vcd
 ```
 
 ## Spice
@@ -27,8 +28,9 @@ uv venv
 uv pip install -r requirements.txt
 
 cargo run spice > modules.cir
-josim-cli -o fulladder.csv fulladder.cir
-uv run josim-plot2.py fulladder.csv -t stacked
+cargo run spice-testbench > fulladder.cir
+josim-cli -o FullAdder.csv fulladder.cir
+uv run josim-plot2.py FullAdder.csv -t stacked
 ```
 
 ## Verilog
@@ -36,7 +38,8 @@ uv run josim-plot2.py fulladder.csv -t stacked
 ```shell
 cd verilog
 cargo run verilog > modules.v
+cargo run verilog-testbench > fulladder.sv
 iverilog -g2012 -s top -I ../../../lib/rsfqlib/verilog/ fulladder.sv
 ./a.out
-gtkwave fulladder.vcd
+gtkwave FullAdder.vcd
 ```

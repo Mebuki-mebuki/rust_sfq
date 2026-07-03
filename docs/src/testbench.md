@@ -21,7 +21,7 @@ wrapper, input patterns, dump settings, and observed outputs.
 ## Example
 
 ```rust
-let test = Testbench::new("fulladder", &fa)
+let test = Testbench::new(&fa)
     .cycles(11)
     .signals(["cin", "b", "a"], 0..8, 0.5)
     .constant("clk", 1, 0.0)
@@ -146,7 +146,7 @@ Each stimulus definition carries its own phase.
 The phase is a real value in the range `0.0 <= phase < 1.0`. It represents the
 position of the pulse within a simulation cycle.
 
-`period_ps` sets the cycle period in picoseconds:
+`period_ps` is required and sets the cycle period in picoseconds:
 
 ```rust
 .period_ps(100.0)
@@ -157,6 +157,10 @@ For physical backends, the event time is:
 ```text
 cycle_index * period_ps + phase * period_ps
 ```
+
+For `phase = 0.0`, the pulse is placed on the next cycle boundary instead of
+time zero. This keeps the first physical pulse away from simulator startup time
+and matches the existing hand-written samples.
 
 The default SPICE pulse shape is the same as the existing hand-written samples:
 the pulse rises from zero, reaches `827.13u`, and returns to zero over a short
@@ -188,12 +192,12 @@ SPICE internal hierarchical names, such as `a1.XTOP`, should be accepted by
 
 The test name determines backend output names.
 
-For `Testbench::new("fulladder", &fa)`:
+For a circuit named `FullAdder`:
 
 ```text
-logical Verilog: fulladder.vcd
-rsfqlib Verilog: fulladder.vcd
-rsfqlib SPICE: fulladder.csv
+logical Verilog: FullAdder.vcd
+rsfqlib Verilog: FullAdder.vcd
+rsfqlib SPICE: FullAdder.csv
 ```
 
 The generated top-level testbench or SPICE file should be written separately
@@ -204,6 +208,7 @@ from the generated circuit module file.
 The generator should validate the testbench before emitting backend code:
 
 - `cycles(n)` must be specified
+- `period_ps(...)` must be specified
 - phase must satisfy `0.0 <= phase < 1.0`
 - 1-bit values must be `0` or `1`
 - `signals` values must fit in the given bit width
