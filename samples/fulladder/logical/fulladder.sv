@@ -27,26 +27,67 @@ module top;
   end
 
   // Input patterns
-  assign clk = 1;
-
-  integer i;
   initial begin
-    a   = 0;
-    b   = 0;
     cin = 0;
-    for (i = 0; i < 8; i++) begin
-      @(posedge __cycle);
-      {cin, b, a} <= i;
-    end
-    for (i = 0; i < 3; i++) begin
-      @(posedge __cycle);
-      {cin, b, a} <= 3'b000;
-    end
+    b = 0;
+    a = 0;
+    clk = 1;
+    @(posedge __cycle);
+    cin <= 0;
+    b <= 0;
+    a <= 1;
+    clk <= 1;
+    @(posedge __cycle);
+    cin <= 0;
+    b <= 1;
+    a <= 0;
+    clk <= 1;
+    @(posedge __cycle);
+    cin <= 0;
+    b <= 1;
+    a <= 1;
+    clk <= 1;
+    @(posedge __cycle);
+    cin <= 1;
+    b <= 0;
+    a <= 0;
+    clk <= 1;
+    @(posedge __cycle);
+    cin <= 1;
+    b <= 0;
+    a <= 1;
+    clk <= 1;
+    @(posedge __cycle);
+    cin <= 1;
+    b <= 1;
+    a <= 0;
+    clk <= 1;
+    @(posedge __cycle);
+    cin <= 1;
+    b <= 1;
+    a <= 1;
+    clk <= 1;
+    @(posedge __cycle);
+    cin <= 0;
+    b <= 0;
+    a <= 0;
+    clk <= 1;
+    @(posedge __cycle);
+    cin <= 0;
+    b <= 0;
+    a <= 0;
+    clk <= 1;
+    @(posedge __cycle);
+    cin <= 0;
+    b <= 0;
+    a <= 0;
+    clk <= 1;
+    @(posedge __cycle);
     $finish;
   end
 
   initial begin
-    $dumpfile("fulladder.vcd");
+    $dumpfile("FullAdder.vcd");
     $dumpvars(0, top);
   end
 endmodule
