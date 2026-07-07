@@ -29,6 +29,7 @@ uv pip install -r requirements.txt
 
 cargo run spice > modules.cir
 cargo run spice-testbench > fulladder.cir
+sed -i 's|/path/to/all.cir|../../../lib/rsfqlib/spice/all.cir|' fulladder.cir
 josim-cli -o FullAdder.csv fulladder.cir
 uv run josim-plot2.py FullAdder.csv -t stacked
 ```

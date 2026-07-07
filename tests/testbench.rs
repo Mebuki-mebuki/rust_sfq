@@ -48,8 +48,34 @@ fn spice_testbench_observes_inputs_plus_requested_signals() {
     assert!(spice.contains(".print v(clk)"));
     assert!(spice.contains(".print v(q)"));
     assert!(spice.contains(".print v(internal.XTOP)"));
-    assert!(spice.contains("V0      a       0       pwl(0 0 125p 0 127.5p 827.13u 130p 0 )"));
-    assert!(spice.contains("V1      b       0       pwl(0 0 150p 0 152.5p 827.13u 155p 0 250p 0 252.5p 827.13u 255p 0 )"));
+    assert!(spice.contains("I1      0       11      pwl(0 0 125p 0 127.5p 827.13u 130p 0 )"));
+    assert!(spice.contains("XDC1    11      12      THmitll_DCSFQ"));
+    assert!(spice.contains("XJ1     12      a       THmitll_JTL"));
+    assert!(spice.contains("I2      0       21      pwl(0 0 150p 0 152.5p 827.13u 155p 0 250p 0 252.5p 827.13u 255p 0 )"));
+    assert!(spice.contains("XDC2    21      22      THmitll_DCSFQ"));
+    assert!(spice.contains("XJ2     22      b       THmitll_JTL"));
+}
+
+#[test]
+fn rsfqlib_verilog_testbench_uses_edges_for_input_pulses() {
+    let circuit = and_circuit();
+    let testbench = Testbench::new(&circuit)
+        .cycles(3)
+        .pulse("a", [1], 0.25)
+        .toggle("b", [1], 0.5)
+        .constant("clk", 1, 0.0)
+        .observe(["q"])
+        .period_ps(100.0);
+
+    let verilog = testbench.generate(RsfqlibVerilogTestbench);
+
+    assert!(verilog.contains("    a = 0;\n    b = 0;\n    clk = 0;"));
+    assert!(verilog.contains("    #100;\n    clk ^= 1;"));
+    assert!(verilog.contains("    #25;\n    a ^= 1;"));
+    assert!(verilog.contains("    #25;\n    b ^= 1;"));
+    assert!(verilog.contains("    #50;\n    clk ^= 1;"));
+    assert!(!verilog.contains("    a = 1;"));
+    assert!(!verilog.contains("    a = 0;\n    #"));
 }
 
 #[test]

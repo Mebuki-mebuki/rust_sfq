@@ -14,7 +14,7 @@ impl TestbenchBackend for RsfqlibSpiceTestbench {
         let tb = testbench.normalize();
         let mut res = Vec::new();
 
-        res.push(".include ../../../lib/rsfqlib/spice/all.cir".to_string());
+        res.push(".include /path/to/all.cir".to_string());
         res.push(".include modules.cir".to_string());
         res.push(String::new());
 
@@ -22,15 +22,13 @@ impl TestbenchBackend for RsfqlibSpiceTestbench {
         res.push(format!("XTOP {} {}", ports.join(" "), tb.circuit.name()));
         res.push(String::new());
 
-        for (index, output) in tb.circuit.out_ports().iter().enumerate() {
-            res.push(format!(
-                "R{}      {}    0       {}",
-                index, output, LOAD_OHMS
-            ));
+        for (index, signal) in tb.signals.iter().enumerate() {
+            res.extend(input_source(index + 1, signal, tb.period_ps));
+            res.push(String::new());
         }
 
-        for (index, signal) in tb.signals.iter().enumerate() {
-            res.push(pwl_source(index, signal, tb.period_ps));
+        for (index, output) in tb.circuit.out_ports().iter().enumerate() {
+            res.push(aligned_line(&format!("R{}", index), output, "0", LOAD_OHMS));
         }
         res.push(String::new());
 
@@ -50,7 +48,32 @@ impl TestbenchBackend for RsfqlibSpiceTestbench {
     }
 }
 
-fn pwl_source(index: usize, signal: &SignalPattern, period_ps: f64) -> String {
+fn input_source(index: usize, signal: &SignalPattern, period_ps: f64) -> Vec<String> {
+    let input_node = format!("{}1", index);
+    let jtl_node = format!("{}2", index);
+    vec![
+        aligned_line(
+            &format!("I{}", index),
+            "0",
+            &input_node,
+            &pwl_expr(signal, period_ps),
+        ),
+        aligned_line(
+            &format!("XDC{}", index),
+            &input_node,
+            &jtl_node,
+            "THmitll_DCSFQ",
+        ),
+        aligned_line(
+            &format!("XJ{}", index),
+            &jtl_node,
+            &signal.name,
+            "THmitll_JTL",
+        ),
+    ]
+}
+
+fn pwl_expr(signal: &SignalPattern, period_ps: f64) -> String {
     let mut points = vec!["0 0".to_string()];
     for (cycle, value) in signal.values.iter().enumerate() {
         if *value == 1 {
@@ -62,10 +85,9 @@ fn pwl_source(index: usize, signal: &SignalPattern, period_ps: f64) -> String {
             points.push(format!("{}p 0", format_ps(end)));
         }
     }
-    format!(
-        "V{}      {}       0       pwl({} )",
-        index,
-        signal.name,
-        points.join(" ")
-    )
+    format!("pwl({} )", points.join(" "))
+}
+
+fn aligned_line(name: &str, first: &str, second: &str, rest: &str) -> String {
+    format!("{:<8}{:<8}{:<8}{}", name, first, second, rest)
 }

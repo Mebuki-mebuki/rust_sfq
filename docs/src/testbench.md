@@ -166,6 +166,14 @@ The default SPICE pulse shape is the same as the existing hand-written samples:
 the pulse rises from zero, reaches `827.13u`, and returns to zero over a short
 picosecond-scale interval.
 
+SPICE input pulses are generated as current sources and passed through
+`THmitll_DCSFQ` and `THmitll_JTL` before reaching the circuit input, matching
+the timing samples.
+
+For rsfqlib Verilog, pulses are represented by signal edges. The generated
+testbench toggles an input with `^= 1` at each pulse time instead of driving a
+short 0/1 level pulse.
+
 ## Observed Signals
 
 Input signals are automatically observed. `observe` lists only additional

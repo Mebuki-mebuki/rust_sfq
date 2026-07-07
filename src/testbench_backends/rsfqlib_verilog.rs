@@ -3,8 +3,6 @@ use crate::testbench::{Testbench, TestbenchBackend};
 
 pub struct RsfqlibVerilogTestbench;
 
-const PULSE_WIDTH_PS: f64 = 5.0;
-
 impl TestbenchBackend for RsfqlibVerilogTestbench {
     fn generate(&self, testbench: &Testbench<'_>) -> String {
         let tb = testbench.normalize();
@@ -16,13 +14,11 @@ impl TestbenchBackend for RsfqlibVerilogTestbench {
             for (cycle, value) in signal.values.iter().enumerate() {
                 if *value == 1 {
                     let start = physical_event_time_ps(cycle, signal, tb.period_ps);
-                    let end = start + PULSE_WIDTH_PS;
-                    events.push((start, 0, signal.name.clone(), 1));
-                    events.push((end, 1, signal.name.clone(), 0));
+                    events.push((start, signal.name.clone()));
                 }
             }
         }
-        events.sort_by(|a, b| a.0.total_cmp(&b.0).then(a.1.cmp(&b.1)).then(a.2.cmp(&b.2)));
+        events.sort_by(|a, b| a.0.total_cmp(&b.0).then(a.1.cmp(&b.1)));
 
         res.push("`timescale 1ps / 100fs".to_string());
         res.push("`include \"all.v\"".to_string());
@@ -47,12 +43,12 @@ impl TestbenchBackend for RsfqlibVerilogTestbench {
         }
 
         let mut current_time = 0.0;
-        for (time, _, name, value) in events {
+        for (time, name) in events {
             let delay = time - current_time;
             if delay > 0.0 {
                 res.push(format!("    #{};", format_ps(delay)));
             }
-            res.push(format!("    {} = {};", name, value));
+            res.push(format!("    {} ^= 1;", name));
             current_time = time;
         }
 
