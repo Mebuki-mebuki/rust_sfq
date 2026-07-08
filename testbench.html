@@ -3,7 +3,7 @@
     <head>
         <!-- Book generated using mdBook -->
         <meta charset="UTF-8">
-        <title>Wire and CounterWire - RustSFQ Language Manual</title>
+        <title>Testbench Generation - RustSFQ Language Manual</title>
 
 
         <!-- Custom HTML head -->
@@ -174,75 +174,181 @@
 
                 <div id="mdbook-content" class="content">
                     <main>
-                        <h1 id="wire-and-counterwire"><a class="header" href="#wire-and-counterwire">Wire and CounterWire</a></h1>
-<h2 id="overview"><a class="header" href="#overview">Overview</a></h2>
-<p><code>Wire</code> and <code>CounterWire</code> represent electrical nets in a netlist and are used to describe the connections between gates within a circuit.</p>
-<p>A <code>Wire</code> appears when constructing a circuit in a forward direction. It represents a net that has <strong>already been driven</strong>, but has <strong>not yet been received</strong>.<br>A <code>CounterWire</code> is used when constructing circuits in a counter-flow manner, such as in counter-flow clocking. It represents a net that has <strong>already been received</strong>, but has <strong>not yet been driven</strong>.</p>
-<p>These objects are governed by Rust’s ownership system, which ensures that each wire has exactly <strong>one driver and one receiver</strong>.</p>
-<h2 id="generating-wires"><a class="header" href="#generating-wires">Generating Wires</a></h2>
-<p>Although <code>Wire</code> and <code>CounterWire</code> are structs, their constructors are private. Users <strong>cannot instantiate them freely</strong>.</p>
-<p>They can only be obtained in the following ways:</p>
+                        <h1 id="testbench-generation"><a class="header" href="#testbench-generation">Testbench Generation</a></h1>
+<p>This page describes how to generate simulation testbenches from a single Rust-side test pattern.</p>
+<h2 id="goal"><a class="header" href="#goal">Goal</a></h2>
+<p>You can describe one test pattern in Rust and generate simulator input for each backend:</p>
 <ul>
-<li>As circuit’s inputs or outputs when calling <code>Circuit::create()</code></li>
-<li>As outputs from gate functions such as <code>and()</code>, <code>xor()</code>, etc.</li>
-<li>From loop construction using <code>gen_loop()</code></li>
+<li>logical Verilog for Icarus Verilog</li>
+<li>rsfqlib Verilog for Icarus Verilog</li>
+<li>rsfqlib SPICE for JoSIM</li>
 </ul>
-<p>Also, <code>Wire</code> instances cannot be cloned.</p>
-<h2 id="using-wires"><a class="header" href="#using-wires">Using Wires</a></h2>
-<p>Wires are used in the following scenarios:</p>
-<ul>
-<li><strong>Gate inputs</strong>: You pass <code>Wire</code> instances as arguments to gate functions like <code>circuit.and(a, b, clk)</code>. In doing so, ownership of the <code>Wire</code> is moved and cannot be reused.</li>
-<li><strong>Labeling</strong>: If you want to assign a label to a wire, pass a reference to <code>label()</code> like <code>circuit.label(&amp;a)</code>.</li>
-<li><strong>Unification</strong>: When connecting a <code>Wire</code> and a <code>CounterWire</code>, you pass them to <code>unify()</code> like <code>circuit.unify(a, b)</code>. The <code>Wire</code> and <code>CounterWire</code> is consumed (ownership is moved).</li>
-</ul>
-<p>The reason <code>Circuit::create()</code> returns <strong><code>CounterWire</code>s for outputs</strong> is because those nets are “to be driven.” You use <code>unify()</code> to connect a <code>Wire</code> (already driven) to these <code>CounterWire</code>s to complete the connection.</p>
-<h2 id="prevention-of-multiple-use"><a class="header" href="#prevention-of-multiple-use">Prevention of Multiple Use</a></h2>
-<p>In SFQ circuits, multiple receivers (fanout) from a single wire is prohibited. This restriction is <strong>enforced statically</strong> via Rust’s ownership system.</p>
-<p>When you use a <code>Wire</code> as an input to a gate function, ownership is moved.</p>
-<p>You cannot pass the same <code>Wire</code> to another gate function afterward, preventing accidental multi-use.</p>
+<p>Circuit module generation remains separate from testbench generation.
+Existing backends such as <code>LogicalVerilog</code>, <code>RsfqlibVerilog</code>, and <code>RsfqlibSpice</code> generate the circuit modules.
+The testbench generator creates the top-level simulation wrapper, input patterns, dump settings, and observed outputs.</p>
+<h2 id="example"><a class="header" href="#example">Example</a></h2>
 <pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
 </span><span class="boring">fn main() {
-</span>let (mut circuit, [a, clk], [], [], []) =
-    Circuit::create(["a", "clk"], [], [], [], "invalid");
-
-let c = circuit.dff(a, clk);
-let d = circuit.not(a, clk);    // use of moved value. failed to compile
+</span>let test = Testbench::new(&amp;fa)
+    .cycles(11)
+    .signals(["cin", "b", "a"], 0..8, 0.5)
+    .constant("clk", 1, 0.0)
+    .observe(["cout", "s"])
+    .period_ps(100.0);
 <span class="boring">}</span></code></pre>
-<h2 id="prevention-of-unused-wires"><a class="header" href="#prevention-of-unused-wires">Prevention of Unused Wires</a></h2>
-<p>Rust’s ownership system guarantees that a <code>Wire</code> is used <strong>at most once</strong>, but <strong>not necessarily at least once</strong>.</p>
-<p>In most cases, an unused <code>Wire</code> will be caught by the Rust compiler as an unused variable.
-However, it is possible to bypass this warning like this:</p>
+<p>Generate a testbench by choosing a testbench backend:</p>
 <pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
 </span><span class="boring">fn main() {
-</span>let (mut circuit, [a, b, c], [], [], []) =
-    Circuit::create(["a", "b", "c"], [], [], [], "invalid");
-
-// underscored variable name
-let _a = circuit.jtl(a);
-
-// discard return value
-circuit.jtl(b);
-
-// irrelevant use
-println!("{:?}", c.type_id());
+</span>test.print(LogicalVerilogTestbench);
+test.print(RsfqlibVerilogTestbench);
+test.print(RsfqlibSpiceTestbench);
 <span class="boring">}</span></code></pre>
-<p>To catch such silent mistakes, RustSFQ performs <strong>runtime validation</strong>:</p>
+<p>This describes an 11-cycle simulation.
+The first 8 cycles enumerate the full-adder input truth table, and the remaining 3 cycles are automatically filled with zeros for <code>cin</code>, <code>b</code>, and <code>a</code>.</p>
+<p>The <code>clk</code> signal is not a special testbench concept.
+It is defined as a normal input signal, here using the <code>constant</code> helper because many SFQ examples need a clock pulse in every cycle.</p>
+<h2 id="stimulus-api"><a class="header" href="#stimulus-api">Stimulus API</a></h2>
+<p>Each input port must be specified by exactly one of these methods:</p>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>.signal(name, values, phase)
+.signals(names, values, phase)
+.constant(name, value, phase)
+.pulse(name, cycles, phase)
+.toggle(name, cycles, phase)
+<span class="boring">}</span></code></pre>
+<p>The same signal must not be specified more than once.</p>
+<h3 id="signal"><a class="header" href="#signal"><code>signal</code></a></h3>
+<p><code>signal</code> defines one 1-bit input signal by an integer sequence.</p>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>.signal("a", [0, 1, 0, 1], 0.5)
+<span class="boring">}</span></code></pre>
+<p>The values must be <code>0</code> or <code>1</code>.</p>
+<h3 id="signals"><a class="header" href="#signals"><code>signals</code></a></h3>
+<p><code>signals</code> defines multiple 1-bit input signals from an integer sequence.</p>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>.signals(["cin", "b", "a"], 0..8, 0.5)
+<span class="boring">}</span></code></pre>
+<p>Signal names are MSB first.
+For example, with <code>["cin", "b", "a"]</code>, the value <code>4</code>, written as <code>0b100</code>, expands to:</p>
+<pre><code class="language-text">cin = 1
+b   = 0
+a   = 0
+</code></pre>
+<p>Each integer value must fit in the width given by the number of signal names.</p>
+<h3 id="constant"><a class="header" href="#constant"><code>constant</code></a></h3>
+<p><code>constant</code> defines a signal that has the same value for every simulation cycle.</p>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>.constant("clk", 1, 0.0)
+<span class="boring">}</span></code></pre>
+<p>The value must be <code>0</code> or <code>1</code>.</p>
+<h3 id="pulse"><a class="header" href="#pulse"><code>pulse</code></a></h3>
+<p><code>pulse</code> defines a signal that is <code>1</code> only at the listed cycle indices and <code>0</code> otherwise.</p>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>.pulse("trigger", [3, 7, 10], 0.5)
+<span class="boring">}</span></code></pre>
+<p>The cycle indices must be within the simulation length specified by <code>cycles</code>.</p>
+<h3 id="toggle"><a class="header" href="#toggle"><code>toggle</code></a></h3>
+<p><code>toggle</code> defines a signal with initial value <code>0</code>.
+At each listed cycle index, the signal value is inverted and keeps that new value until the next toggle.</p>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>.toggle("mode", [2, 6], 0.4)
+<span class="boring">}</span></code></pre>
+<p>In this example, <code>mode</code> is <code>0</code> before cycle 2, <code>1</code> from cycle 2 through cycle 5, and <code>0</code> again from cycle 6 onward.</p>
+<h2 id="cycles-and-padding"><a class="header" href="#cycles-and-padding">Cycles And Padding</a></h2>
+<p><code>cycles(n)</code> sets the total simulation length.
+This includes both active input patterns and any quiet cycles at the end.</p>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>.cycles(11)
+<span class="boring">}</span></code></pre>
+<p>Length rules:</p>
 <ul>
-<li>Each <code>Wire</code> internally tracks a private counter for receivers.</li>
-<li>When a <code>Wire</code> is dropped (i.e., its destructor is called), RustSFQ checks whether it has exactly one receiver.</li>
-<li>If not, a runtime error is reported.</li>
+<li>if <code>signal</code> has more than <code>n</code> values, it is an error</li>
+<li>if <code>signal</code> has fewer than <code>n</code> values, zeros are appended</li>
+<li>if <code>signals</code> has more than <code>n</code> values, it is an error</li>
+<li>if <code>signals</code> has fewer than <code>n</code> values, zeros are appended for every signal</li>
+<li><code>constant</code> expands to <code>n</code> cycles</li>
+<li><code>pulse</code> and <code>toggle</code> cycle indices must be less than <code>n</code></li>
 </ul>
-<p>This mechanism ensures correctness even in subtle or intentionally suppressed cases.</p>
+<p>There is no separate <code>flush_cycles</code> setting.
+Quiet time at the end of a simulation is represented by choosing a larger <code>cycles</code> value.</p>
+<h2 id="phase-and-period"><a class="header" href="#phase-and-period">Phase And Period</a></h2>
+<p>Each stimulus definition carries its own phase.</p>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>.signal("a", [0, 1, 0, 1], 0.5)
+.constant("clk", 1, 0.0)
+<span class="boring">}</span></code></pre>
+<p>The phase is a real value in the range <code>0.0 &lt;= phase &lt; 1.0</code>.
+It represents the position of the pulse within a simulation cycle.</p>
+<p><code>period_ps</code> sets the cycle period in picoseconds and is required:</p>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>.period_ps(100.0)
+<span class="boring">}</span></code></pre>
+<p>For physical backends, the event time is:</p>
+<pre><code class="language-text">cycle_index * period_ps + phase * period_ps
+</code></pre>
+<p>For <code>phase = 0.0</code>, the pulse is placed on the next cycle boundary instead of time zero.
+This keeps the first physical pulse away from simulator startup time and matches the existing hand-written samples.</p>
+<p>The default SPICE pulse shape is the same as the existing hand-written samples: the pulse rises from zero, reaches <code>827.13u</code>, and returns to zero over a short picosecond-scale interval.</p>
+<p>SPICE input pulses are generated as current sources and passed through <code>THmitll_DCSFQ</code> and <code>THmitll_JTL</code> before reaching the circuit input, matching the timing samples.</p>
+<p>For rsfqlib Verilog, pulses are represented by signal edges.
+The generated testbench toggles an input with <code>^= 1</code> at each pulse time instead of driving a short 0/1 level pulse.</p>
+<h2 id="observed-signals"><a class="header" href="#observed-signals">Observed Signals</a></h2>
+<p>Input signals are automatically observed.
+<code>observe</code> lists only additional signals, such as outputs or internal nodes.</p>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>.observe(["cout", "s"])
+<span class="boring">}</span></code></pre>
+<p>For the full-adder example above, the final observed signal list is:</p>
+<pre><code class="language-text">cin, b, a, clk, cout, s
+</code></pre>
+<p>SPICE generation uses the observed list for <code>.print v(...)</code> statements.
+Verilog generation uses <code>$dumpvars(0, top)</code> to write the waveform.</p>
+<p>SPICE internal hierarchical names, such as <code>a1.XTOP</code>, are accepted by <code>observe</code> without strict validation against the circuit port list.</p>
+<h2 id="generated-outputs"><a class="header" href="#generated-outputs">Generated Outputs</a></h2>
+<p>The circuit name determines backend output names.</p>
+<p>For a circuit named <code>FullAdder</code>:</p>
+<pre><code class="language-text">logical Verilog: FullAdder.vcd
+rsfqlib Verilog: FullAdder.vcd
+rsfqlib SPICE: FullAdder.csv
+</code></pre>
+<p>The generated top-level testbench or SPICE file is separate from the generated circuit module file.</p>
+<p>The generated SPICE testbench includes the rsfqlib SPICE library as:</p>
+<pre><code class="language-spice">.include /path/to/all.cir
+</code></pre>
+<p>Replace <code>/path/to/all.cir</code> with the path to your local <code>all.cir</code> file before running JoSIM.</p>
+<h2 id="validation-rules"><a class="header" href="#validation-rules">Validation Rules</a></h2>
+<p>The generator validates the testbench before emitting backend code:</p>
+<ul>
+<li><code>cycles(n)</code> must be specified</li>
+<li><code>period_ps(...)</code> must be specified</li>
+<li>phase must satisfy <code>0.0 &lt;= phase &lt; 1.0</code></li>
+<li>1-bit values must be <code>0</code> or <code>1</code></li>
+<li><code>signals</code> values must fit in the given bit width</li>
+<li>the same signal must not be specified more than once</li>
+<li>every circuit input port must be specified</li>
+<li>stimulus names must refer to circuit input ports</li>
+<li><code>observe</code> names are allowed to include backend-specific hierarchical names</li>
+</ul>
 
                     </main>
 
                     <nav class="nav-wrapper" aria-label="Page navigation">
                         <!-- Mobile navigation buttons -->
-                            <a rel="prev" href="timing.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                            <a rel="prev" href="gatelist.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                                 <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/></svg></span>
                             </a>
 
-                            <a rel="next prefetch" href="gatelist.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                            <a rel="next prefetch" href="rust_beginner.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                                 <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M278.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-160 160c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L210.7 256 73.4 118.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l160 160z"/></svg></span>
                             </a>
 
@@ -252,11 +358,11 @@ println!("{:?}", c.type_id());
             </div>
 
             <nav class="nav-wide-wrapper" aria-label="Page navigation">
-                    <a rel="prev" href="timing.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                    <a rel="prev" href="gatelist.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                         <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/></svg></span>
                     </a>
 
-                    <a rel="next prefetch" href="gatelist.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                    <a rel="next prefetch" href="rust_beginner.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                         <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M278.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-160 160c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L210.7 256 73.4 118.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l160 160z"/></svg></span>
                     </a>
             </nav>

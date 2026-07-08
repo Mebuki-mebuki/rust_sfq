@@ -15,8 +15,8 @@
         <link rel="icon" href="favicon-de23e50b.svg">
         <link rel="shortcut icon" href="favicon-8114d1fc.png">
         <link rel="stylesheet" href="css/variables-8adf115d.css">
-        <link rel="stylesheet" href="css/general-0392ca55.css">
-        <link rel="stylesheet" href="css/chrome-fc474251.css">
+        <link rel="stylesheet" href="css/general-e96d0476.css">
+        <link rel="stylesheet" href="css/chrome-d279d366.css">
         <link rel="stylesheet" href="css/print-9e4910d8.css" media="print">
 
         <!-- Fonts -->
@@ -35,10 +35,10 @@
             const path_to_root = "";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "searchindex-cf161405.js";
+            window.path_to_searchindex_js = "searchindex-4a5417b0.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="toc-85550d20.js"></script>
+        <script src="toc-e53f47a8.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -189,7 +189,7 @@ RustSFQ also provides a <strong>cycle-level</strong> simulation environment base
 <h2 id="example-1"><a class="header" href="#example-1">Example 1</a></h2>
 <p>The source code and simulation code for this example are available under <code>samples/timings</code>.</p>
 <p>Consider the following circuit, which consists of an OR gate followed by a NOT gate.</p>
-<p><img src="figures/nor-schem.webp" alt="Schematic of a NOR circuit built from an OR gate followed by a NOT gate"></p>
+<p><label class="checkbox-label"><input class="checkbox-img" type="checkbox"><img src="figures/nor-schem.webp" alt="Schematic of a NOR circuit built from an OR gate followed by a NOT gate"><span class="img-wrapper"><img src="figures/nor-schem.webp" alt="Schematic of a NOR circuit built from an OR gate followed by a NOT gate"></span></label></p>
 <h3 id="pipelined-version"><a class="header" href="#pipelined-version">Pipelined Version</a></h3>
 <p>Because OR and NOT gates are clock-synchronous gates, they are commonly operated as a two-stage pipeline.
 In RustSFQ, this can be written as follows:</p>
@@ -227,7 +227,7 @@ gtkwave nor-p-test.vcd
 </code></pre>
 <p>The simulation result is shown below.
 The intermediate signal <code>x = a | b</code> is delayed by one cycle from <code>a</code> and <code>b</code>, and the output <code>y = ~x</code> is delayed by one more cycle.</p>
-<p><img src="figures/nor-p-logical.png" alt="Cycle-level logical simulation of the pipelined NOR circuit showing x delayed by one cycle and y delayed by two cycles"></p>
+<p><label class="checkbox-label"><input class="checkbox-img" type="checkbox"><img src="figures/nor-p-logical.png" alt="Cycle-level logical simulation of the pipelined NOR circuit showing x delayed by one cycle and y delayed by two cycles"><span class="img-wrapper"><img src="figures/nor-p-logical.png" alt="Cycle-level logical simulation of the pipelined NOR circuit showing x delayed by one cycle and y delayed by two cycles"></span></label></p>
 <p>Next, run the analog simulation with:</p>
 <pre><code class="language-shell">cd samples/timings/spice
 cargo run spice &gt; modules.cir
@@ -235,7 +235,7 @@ josim-cli -o nor-p-test.csv nor-p-test.cir
 python josim-plot2.py nor-p-test.csv -t stacked
 </code></pre>
 <p>The result is:</p>
-<p><img src="figures/nor-p-test.webp" alt="Analog simulation waveform of the pipelined NOR circuit with gate-local cycles highlighted"></p>
+<p><label class="checkbox-label"><input class="checkbox-img" type="checkbox"><img src="figures/nor-p-test.webp" alt="Analog simulation waveform of the pipelined NOR circuit with gate-local cycles highlighted"><span class="img-wrapper"><img src="figures/nor-p-test.webp" alt="Analog simulation waveform of the pipelined NOR circuit with gate-local cycles highlighted"></span></label></p>
 <p>The top four traces show the inputs and output of the OR gate, and the bottom three traces show the input and output of the NOT gate.
 The white boxes indicate the cycle boundaries for each gate.</p>
 <p>The start time of each gate-local cycle is determined by the first pulse that can arrive at that gate.
@@ -270,7 +270,7 @@ These values match the cycle-level logical simulation above.</p>
 <p>The only difference from the pipelined version is the timing specified on the OR and NOT gates.
 In terms of connectivity, both descriptions still correspond to the same circuit schematic.</p>
 <p>The cycle-level logical simulation gives the following result, confirming that the circuit operates combinationally.</p>
-<p><img src="figures/nor-c-logical.png" alt="Cycle-level logical simulation of the combinational NOR circuit showing y changing in the same cycle as a and b"></p>
+<p><label class="checkbox-label"><input class="checkbox-img" type="checkbox"><img src="figures/nor-c-logical.png" alt="Cycle-level logical simulation of the combinational NOR circuit showing y changing in the same cycle as a and b"><span class="img-wrapper"><img src="figures/nor-c-logical.png" alt="Cycle-level logical simulation of the combinational NOR circuit showing y changing in the same cycle as a and b"></span></label></p>
 <p>Now consider the corresponding analog simulation.
 Timing specifications in RustSFQ describe the intended behavior of the circuit.
 They <strong>do not, by themselves, guarantee</strong> that the physical circuit satisfies those timing constraints.</p>
@@ -299,7 +299,7 @@ They <strong>do not, by themselves, guarantee</strong> that the physical circuit
 }
 <span class="boring">}</span></code></pre>
 <p>The analog simulation result is:</p>
-<p><img src="figures/nor-c-test.webp" alt="Analog simulation waveform of the combinational NOR circuit with delayed clock paths and gate-local cycles highlighted"></p>
+<p><label class="checkbox-label"><input class="checkbox-img" type="checkbox"><img src="figures/nor-c-test.webp" alt="Analog simulation waveform of the combinational NOR circuit with delayed clock paths and gate-local cycles highlighted"><span class="img-wrapper"><img src="figures/nor-c-test.webp" alt="Analog simulation waveform of the combinational NOR circuit with delayed clock paths and gate-local cycles highlighted"></span></label></p>
 <p>Cycle start positions differ by gate and are based on the earliest time at which an input signal can arrive at each gate.
 In the first cycle of this example, there are no pulses on <code>A</code>, <code>B</code>, or <code>X</code>, but dashed lines mark where those pulses will appear if they are present.</p>
 <p>The <code>0</code> and <code>1</code> labels in this simulation result match the earlier cycle-level logical simulation.</p>
@@ -307,7 +307,7 @@ In the first cycle of this example, there are no pulses on <code>A</code>, <code
 <p>The examples in this section compare a single-cycle path with a multi-cycle version of the same data path.
 Both circuits split the input <code>a</code> into two branches.
 One branch is captured by a DFF to produce <code>x</code>; the other branch is used as the second input of an AND gate.</p>
-<p><img src="figures/single-multi-schem.webp" alt="Schematic shared by the single-cycle and multi-cycle examples: a DFF path and a bypass path from a split input meet at an AND gate"></p>
+<p><label class="checkbox-label"><input class="checkbox-img" type="checkbox"><img src="figures/single-multi-schem.webp" alt="Schematic shared by the single-cycle and multi-cycle examples: a DFF path and a bypass path from a split input meet at an AND gate"><span class="img-wrapper"><img src="figures/single-multi-schem.webp" alt="Schematic shared by the single-cycle and multi-cycle examples: a DFF path and a bypass path from a split input meet at an AND gate"></span></label></p>
 <h3 id="single-cycle-path"><a class="header" href="#single-cycle-path">Single-Cycle Path</a></h3>
 <p>In the single-cycle version, the second branch, <code>a2</code>, has no explicit cycle delay.
 It is consumed by the pipelined AND gate in the usual way.
@@ -340,9 +340,9 @@ The <code>_p</code> helpers describe the ordinary pipelined arrival order: the c
 <span class="boring">}</span></code></pre>
 <p>The cycle-level logical simulation shows the values of <code>a</code>, <code>x</code>, and <code>y</code> for the single-cycle path.
 The numbers in the waveform identify the input values associated with each cycle in which the AND output is <code>1</code>.</p>
-<p><img src="figures/single-cycle-logical.png" alt="Cycle-level logical simulation of the single-cycle path"></p>
+<p><label class="checkbox-label"><input class="checkbox-img" type="checkbox"><img src="figures/single-cycle-logical.png" alt="Cycle-level logical simulation of the single-cycle path"><span class="img-wrapper"><img src="figures/single-cycle-logical.png" alt="Cycle-level logical simulation of the single-cycle path"></span></label></p>
 <p>The corresponding analog simulation shows the pulse waveforms at the input, DFF output, bypass path, clock branches, and output.</p>
-<p><img src="figures/single-cycle-test.webp" alt="Analog simulation waveform of the single-cycle path"></p>
+<p><label class="checkbox-label"><input class="checkbox-img" type="checkbox"><img src="figures/single-cycle-test.webp" alt="Analog simulation waveform of the single-cycle path"><span class="img-wrapper"><img src="figures/single-cycle-test.webp" alt="Analog simulation waveform of the single-cycle path"></span></label></p>
 <h3 id="multi-cycle-path"><a class="header" href="#multi-cycle-path">Multi-Cycle Path</a></h3>
 <p>The multi-cycle version delays the <code>a2</code> branch by two additional cycles before it reaches the same AND gate.
 For example, this can model a very long interconnect whose signal propagation takes a substantial amount of time.</p>
@@ -390,16 +390,16 @@ The cycle-level logical backend represents it with two additional registers.</p>
 Timing annotations state the intended cycle-level behavior; physical buffers are still needed to make the analog circuit satisfy that intent.</p>
 <p>The logical simulation therefore differs from the single-cycle case.
 For each output pulse on <code>y</code>, the corresponding value of <code>a</code> is from three cycles earlier: one cycle of pipelining plus the two additional cycles.</p>
-<p><img src="figures/multi-cycle-logical.png" alt="Cycle-level logical simulation of the multi-cycle path"></p>
+<p><label class="checkbox-label"><input class="checkbox-img" type="checkbox"><img src="figures/multi-cycle-logical.png" alt="Cycle-level logical simulation of the multi-cycle path"><span class="img-wrapper"><img src="figures/multi-cycle-logical.png" alt="Cycle-level logical simulation of the multi-cycle path"></span></label></p>
 <p>The analog waveform confirms that the BUFF chain delays the <code>a2</code> path from <code>a2_start</code> to <code>a2_end</code> before it reaches the AND gate.</p>
-<p><img src="figures/multi-cycle-test.webp" alt="Analog simulation waveform of the multi-cycle path, including the delayed a2 branch"></p>
+<p><label class="checkbox-label"><input class="checkbox-img" type="checkbox"><img src="figures/multi-cycle-test.webp" alt="Analog simulation waveform of the multi-cycle path, including the delayed a2 branch"><span class="img-wrapper"><img src="figures/multi-cycle-test.webp" alt="Analog simulation waveform of the multi-cycle path, including the delayed a2 branch"></span></label></p>
 <h2 id="example-3-clock-between-data-arrivals"><a class="header" href="#example-3-clock-between-data-arrivals">Example 3: Clock Between Data Arrivals</a></h2>
 <p>The arrival order at a clocked gate need not be strictly pipelined or strictly combinational.
 This example uses an OR gate whose first data input, <code>x</code>, arrives before the clock, while its second data input, <code>y1</code>, arrives after the clock:</p>
 <pre><code class="language-text">x &lt; clk2 &lt; y1
 </code></pre>
 <p>The circuit first computes <code>x = a &amp; b</code> in a combinational style. It then feeds <code>x</code> and the feedback signal <code>y1</code> into the OR gate, whose output is split into the circuit output <code>y</code> and the feedback path.</p>
-<p><img src="figures/clock-between-schem.webp" alt="Schematic of the clock-between-data example, with x arriving before clk2 and feedback signal y1 arriving afterward"></p>
+<p><label class="checkbox-label"><input class="checkbox-img" type="checkbox"><img src="figures/clock-between-schem.webp" alt="Schematic of the clock-between-data example, with x arriving before clk2 and feedback signal y1 arriving afterward"><span class="img-wrapper"><img src="figures/clock-between-schem.webp" alt="Schematic of the clock-between-data example, with x arriving before clk2 and feedback signal y1 arriving afterward"></span></label></p>
 <pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
 </span><span class="boring">fn main() {
 </span>fn clock_between_data() -&gt; Circuit&lt;3, 0, 1, 0&gt; {
@@ -436,10 +436,10 @@ This example uses an OR gate whose first data input, <code>x</code>, arrives bef
 <p>The arrival orders on the OR gate express the relationship directly: <code>x % 0</code> arrives first, <code>clk2 % 1</code> arrives next, and <code>y1 % 2</code> arrives last.
 This is neither the usual pipeline order, where the clock is first, nor the combinational order, where the clock is last.</p>
 <p>The cycle-level logical simulation shows the resulting feedback behavior.</p>
-<p><img src="figures/clock-between-logical.png" alt="Cycle-level logical simulation of the clock-between-data example"></p>
+<p><label class="checkbox-label"><input class="checkbox-img" type="checkbox"><img src="figures/clock-between-logical.png" alt="Cycle-level logical simulation of the clock-between-data example"><span class="img-wrapper"><img src="figures/clock-between-logical.png" alt="Cycle-level logical simulation of the clock-between-data example"></span></label></p>
 <p>For the analog simulation, the five BUFF gates on the <code>clk2</code> path provide the physical clock delay needed to realize this arrival order.
 The waveform shows <code>x</code>, the delayed clock, <code>y1</code>, and <code>y0</code> in their intended sequence.</p>
-<p><img src="figures/clock-between-test.webp" alt="Analog simulation waveform of the clock-between-data example with x, delayed clock clk2, feedback y1, and output y0"></p>
+<p><label class="checkbox-label"><input class="checkbox-img" type="checkbox"><img src="figures/clock-between-test.webp" alt="Analog simulation waveform of the clock-between-data example with x, delayed clock clk2, feedback y1, and output y0"><span class="img-wrapper"><img src="figures/clock-between-test.webp" alt="Analog simulation waveform of the clock-between-data example with x, delayed clock clk2, feedback y1, and output y0"></span></label></p>
 <h2 id="example-4-unsatisfiable-timing-constraints"><a class="header" href="#example-4-unsatisfiable-timing-constraints">Example 4: Unsatisfiable Timing Constraints</a></h2>
 <p>RustSFQ rejects a circuit when its requested <strong>arrival orders within a cycle</strong> cannot be satisfied.
 The following example resembles the previous feedback circuit, but it requires the feedback signal <code>y1</code> to arrive before <code>clk2</code>:</p>
@@ -525,7 +525,7 @@ To make the feedback design valid, add an intentional multi-cycle delay on the f
 
         <script src="clipboard-1626706a.min.js"></script>
         <script src="highlight-abc7f01d.js"></script>
-        <script src="book-c22b7243.js"></script>
+        <script src="book-609e4cb8.js"></script>
 
         <!-- Custom JS scripts -->
 
