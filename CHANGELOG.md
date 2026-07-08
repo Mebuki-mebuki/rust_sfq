@@ -73,3 +73,12 @@ First release of RustSFQ
 ### Fixed
 
 - Fixed LogicalVerilog generation for multi-stage register delays.
+
+## [1.0.4] - 2026-07-08
+
+### Added
+
+- Added `Testbench` generation for logical Verilog, rsfqlib Verilog, and rsfqlib SPICE simulations.
+- Added stimulus APIs for single signals, packed multi-signal patterns, constants, pulses, toggles, observed signals, simulation cycles, and cycle period.
+- Added full-adder sample commands for generating testbenches automatically.
+- Added testbench-generation documentation.
