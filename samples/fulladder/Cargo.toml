@@ -4,4 +4,4 @@ version = "0.1.0"
 edition = "2024"
 
 [dependencies]
-rust_sfq = "1.0.3"
+rust_sfq = "1.0.4"

@@ -9,7 +9,7 @@ rustsfq_split SPLIT3 (b, _SPLIT3_q1, _SPLIT3_q2, __cycle);
 rustsfq_and AND4 (_SPLIT2_q1_d1, _SPLIT3_q1_d1, _SPLIT1_q1, c, __cycle);
 rustsfq_xor XOR5 (_SPLIT2_q2_d1, _SPLIT3_q2_d1, _SPLIT1_q2, s, __cycle);
 always @(posedge __cycle) begin
-_SPLIT2_q1_d1 <= _SPLIT2_q1; _SPLIT3_q2_d1 <= _SPLIT3_q2; _SPLIT2_q2_d1 <= _SPLIT2_q2; _SPLIT3_q1_d1 <= _SPLIT3_q1;
+_SPLIT2_q2_d1 <= _SPLIT2_q2; _SPLIT3_q2_d1 <= _SPLIT3_q2; _SPLIT3_q1_d1 <= _SPLIT3_q1; _SPLIT2_q1_d1 <= _SPLIT2_q1;
 end
 endmodule
 module FullAdder (a, b, cin, clk, cout, s, __cycle);
@@ -32,6 +32,6 @@ rustsfq_buff BUFF12 (_BUFF11_q, _BUFF12_q, __cycle);
 HalfAdder HalfAdder13 (_BUFF10_q, _BUFF12_q, _SPLIT5_q2, _HalfAdder13_c, s, __cycle);
 rustsfq_merge MERGE14 (_DFF8_q, _HalfAdder13_c, cout, __cycle);
 always @(posedge __cycle) begin
-cin_d1 <= cin; _BUFF7_q_d1 <= _BUFF7_q;
+_BUFF7_q_d1 <= _BUFF7_q; cin_d1 <= cin;
 end
 endmodule

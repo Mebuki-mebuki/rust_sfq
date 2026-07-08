@@ -6,35 +6,63 @@ module top;
   // Inputs
   reg a, b, cin, clk;
   // Outputs
-  wire s, cout;
+  wire cout, s;
 
-  FullAdder fa (.*);
+  FullAdder dut (.*);
 
-  // Clock generation
+  // Input pulses
   initial begin
-    clk = 0;
-    forever #100 clk ^= 1;
-  end
-
-  // Input patterns
-
-  integer i;
-  initial begin
-    a   = 0;
-    b   = 0;
     cin = 0;
+    b = 0;
+    a = 0;
+    clk = 0;
+    #100;
+    clk ^= 1;
     #50;
-    for (i = 0; i < 8; i++) begin
-      {cin, b, a} ^= i;
-      #100;
-    end
-    #200;
+    a ^= 1;
+    #50;
+    clk ^= 1;
+    #50;
+    b ^= 1;
+    #50;
+    clk ^= 1;
+    #50;
+    a ^= 1;
+    b ^= 1;
+    #50;
+    clk ^= 1;
+    #50;
+    cin ^= 1;
+    #50;
+    clk ^= 1;
+    #50;
+    a ^= 1;
+    cin ^= 1;
+    #50;
+    clk ^= 1;
+    #50;
+    b ^= 1;
+    cin ^= 1;
+    #50;
+    clk ^= 1;
+    #50;
+    a ^= 1;
+    b ^= 1;
+    cin ^= 1;
+    #50;
+    clk ^= 1;
+    #100;
+    clk ^= 1;
+    #100;
+    clk ^= 1;
+    #100;
+    clk ^= 1;
+    #100;
     $finish;
   end
 
   initial begin
-    $dumpfile("fulladder.vcd");
+    $dumpfile("FullAdder.vcd");
     $dumpvars(0, top);
   end
 endmodule
-

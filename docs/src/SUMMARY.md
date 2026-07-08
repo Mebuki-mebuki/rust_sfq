@@ -6,4 +6,5 @@
 - [Timing Model](timing.md)
 - [Wire and CounterWire](wire.md)
 - [Available Gates and Backends](gatelist.md)
+- [Testbench Generation](testbench.md)
 - [For Rust Beginners](rust_beginner.md)

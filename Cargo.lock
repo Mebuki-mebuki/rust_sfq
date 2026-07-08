@@ -131,7 +131,7 @@ dependencies = [
 
 [[package]]
 name = "rust_sfq"
-version = "1.0.3"
+version = "1.0.4"
 dependencies = [
  "colored",
  "petgraph",

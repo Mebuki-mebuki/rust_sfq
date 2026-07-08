@@ -57,14 +57,25 @@ fn main() {
     let ha = half_adder_circuit();
     let fa = full_adder_circuit(&ha);
     let design = design![&ha, &fa];
+    let testbench = Testbench::new(&fa)
+        .cycles(11)
+        .signals(["cin", "b", "a"], 0..8, 0.5)
+        .constant("clk", 1, 0.0)
+        .observe(["cout", "s"])
+        .period_ps(100.0);
 
     let args: Vec<String> = env::args().collect();
     match args.get(1).map(|s| s.as_str()) {
         Some("logical") => design.print(LogicalVerilog),
         Some("spice") => design.print(RsfqlibSpice),
         Some("verilog") => design.print(RsfqlibVerilog),
+        Some("logical-testbench") => testbench.print(LogicalVerilogTestbench),
+        Some("spice-testbench") => testbench.print(RsfqlibSpiceTestbench),
+        Some("verilog-testbench") => testbench.print(RsfqlibVerilogTestbench),
         _ => {
-            println!("Usage: cargo run [logical|spice|verilog]");
+            println!(
+                "Usage: cargo run [logical|spice|verilog|logical-testbench|spice-testbench|verilog-testbench]"
+            );
         }
     }
 }
