@@ -82,3 +82,15 @@ First release of RustSFQ
 - Added stimulus APIs for single signals, packed multi-signal patterns, constants, pulses, toggles, observed signals, simulation cycles, and cycle period.
 - Added full-adder sample commands for generating testbenches automatically.
 - Added testbench-generation documentation.
+
+## [1.0.5] - 2026-11-08
+
+### Fixed
+
+- NDRO logical simulation now respects explicitly specified set/reset arrival orders when both inputs have pulses in the same cycle, including cases where the clock arrives between them.
+- Fixed unknown-state propagation in the NDRO model. When set/reset order is unspecified and both inputs are asserted, storage becomes `X` instead of silently retaining its previous value. A set-only or reset-only update restores a known state.
+
+### Added
+
+- Added NDRO ordering documentation and regression tests for generated Verilog, all 13 relative input orders, wire delays, state retention, and unknown-state recovery.
+- Added optional Icarus Verilog tests comparing generated circuits with an independent event-order reference across all four-cycle binary input sequences from both stored values.

@@ -170,7 +170,25 @@ impl Backend for LogicalVerilog {
                 } => gate_string(c, m, name, vec![&a.id, &clk.id], vec![q], "dff"),
                 Gate::Ndro {
                     name, a, b, clk, q, ..
-                } => gate_string(c, m, name, vec![&a.id, &b.id, &clk.id], vec![q], "ndro"),
+                } => {
+                    // clk より後の入力は前サイクルから遅延されて届くため、
+                    // 今サイクルの clk 以前の入力より先に処理する。
+                    let a_key = (a.order <= clk.order, a.order);
+                    let b_key = (b.order <= clk.order, b.order);
+                    let set_last = match a_key.cmp(&b_key) {
+                        std::cmp::Ordering::Less => "1'b0",
+                        std::cmp::Ordering::Greater => "1'b1",
+                        std::cmp::Ordering::Equal => "1'bx",
+                    };
+                    gate_string(
+                        c,
+                        m,
+                        name,
+                        vec![&a.id, &b.id, &clk.id],
+                        vec![q],
+                        &format!("ndro #(.SET_LAST({set_last}))"),
+                    )
+                }
                 Gate::Buff { name, a, q } => gate_string(c, m, name, vec![a], vec![q], "buff"),
                 Gate::ZeroAsync { name, q } => {
                     gate_string(c, m, name, vec![], vec![q], "zero_async")

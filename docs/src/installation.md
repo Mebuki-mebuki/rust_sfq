@@ -24,7 +24,7 @@ To use RustSFQ in your project, add it to your `Cargo.toml` under the `[dependen
 
 ```toml
 [dependencies]
-rust_sfq = "1.0.3"
+rust_sfq = "1.0.5"
 ```
 
 ## 4. Optional: Using VSCode and rust-analyzer

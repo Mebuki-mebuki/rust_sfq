@@ -338,7 +338,7 @@ To use an external library (crate), you must:
 
     ```toml
     [dependencies]
-    rust_sfq = "1.0.3"
+    rust_sfq = "1.0.5"
     ```
 
 2. Then import items from the crate in your code:

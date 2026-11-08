@@ -329,6 +329,39 @@ The waveform shows `x`, the delayed clock, `y1`, and `y0` in their intended sequ
 
 ![Analog simulation waveform of the clock-between-data example with x, delayed clock clk2, feedback y1, and output y0](figures/clock-between-test.webp)
 
+## NDRO Set/Reset Ordering
+
+NDRO's first input is set, its second input is reset, and `clk` reads the stored value without clearing it.
+The stored value starts at zero, and set and reset update it even in cycles without a clock pulse.
+
+Specify distinct arrival orders to use both set and reset in one cycle:
+
+```rust
+// Set, then reset, then read: the output is 0 when all three pulses arrive.
+let q = ckt.ndro(set % 0, reset % 1, clk % 2);
+```
+
+Reversing set and reset makes that read return 1.
+The clock can also arrive between the two updates:
+
+```rust
+// Read after set but before reset: the output is 1 in this cycle.
+// A read-only cycle afterward returns 0 because reset has since arrived.
+let q = ckt.ndro(set % 0, reset % 2, clk % 1);
+```
+
+These examples assume one pulse on each of the three inputs in the described cycle.
+When a pulse is absent, only the remaining events are performed.
+Repeated clock pulses in successive cycles preserve the stored value.
+
+The logical backend preserves this behavior by delaying inputs later than `clk` by one cycle and passing their resulting order to the NDRO model.
+Explicit `add_delay` values add further wire delays as usual.
+
+Equal set/reset order numbers leave their relative order unspecified.
+If both inputs are asserted in that case, the logical stored value becomes `X` and remains unknown until a set-only or reset-only update.
+This replaces the old model's accidental state retention for ambiguous updates.
+A cycle without a clock pulse still outputs zero. As with the existing logical gate models, data tied with `clk` is processed without an extra cycle delay; use distinct orders when the data/clock relationship matters.
+
 ## Example 4: Unsatisfiable Timing Constraints
 
 RustSFQ rejects a circuit when its requested **arrival orders within a cycle** cannot be satisfied.

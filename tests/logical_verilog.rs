@@ -72,3 +72,47 @@ fn terminate_does_not_emit_a_gate_instance() {
     assert!(!verilog.contains("rustsfq_terminate"));
     assert!(verilog.ends_with("endmodule"));
 }
+
+#[test]
+fn ndro_order_is_aligned_with_inserted_input_registers() {
+    // All 13 relative orders, including unspecified a/b order and clock ties.
+    // Expected priorities are listed independently of the backend calculation.
+    let cases = [
+        ([0, 1, 2], "1'b0"),
+        ([1, 0, 2], "1'b1"),
+        ([1, 2, 0], "1'b0"),
+        ([2, 1, 0], "1'b1"),
+        ([0, 2, 1], "1'b1"),
+        ([2, 0, 1], "1'b0"),
+        ([0, 0, 1], "1'bx"),
+        ([1, 1, 0], "1'bx"),
+        ([0, 0, 0], "1'bx"),
+        ([0, 1, 0], "1'b1"),
+        ([1, 0, 0], "1'b0"),
+        ([1, 0, 1], "1'b1"),
+        ([0, 1, 1], "1'b0"),
+        // Orders are relative labels, not delays or bounded phase numbers.
+        ([0, usize::MAX, 42], "1'b1"),
+    ];
+    for ([a_order, b_order, clk_order], set_last) in cases {
+        let (mut circuit, [a, b, clk], [], [q_out], []) =
+            Circuit::create(["a", "b", "clk"], [], ["q"], [], "NdroOrder");
+        circuit.add_delay(&a, 2);
+        let q = circuit.ndro(a % a_order, b % b_order, clk % clk_order);
+        circuit.unify(q, q_out);
+
+        let verilog = design![&circuit].generate(LogicalVerilog);
+        let a_name = if a_order > clk_order { "a_d3" } else { "a_d2" };
+        let b_name = if b_order > clk_order { "b_d1" } else { "b" };
+        assert!(
+            verilog.contains(&format!(
+                "rustsfq_ndro #(.SET_LAST({set_last})) NDRO1 ({a_name}, {b_name}, clk, q, __cycle);"
+            )),
+            "{verilog}"
+        );
+        assert!(verilog.contains("a_d1 <= a;"));
+        assert!(verilog.contains("a_d2 <= a_d1;"));
+        assert_eq!(verilog.contains("a_d3 <= a_d2;"), a_order > clk_order);
+        assert_eq!(verilog.contains("b_d1 <= b;"), b_order > clk_order);
+    }
+}

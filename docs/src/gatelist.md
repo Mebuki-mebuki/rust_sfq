@@ -1,6 +1,6 @@
 # Available Gates and Backends
 
-## Compatibility table (as of version 1.0.3)
+## Compatibility table (as of version 1.0.5)
 
 | Gate | LogicalVerilog | RsfqlibSpice | RsfqlibVerilog |
 | ---- | :------------: | :----------: | :------------: |
