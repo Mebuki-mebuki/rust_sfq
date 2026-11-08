@@ -35,7 +35,7 @@
             const path_to_root = "";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "searchindex-4a5417b0.js";
+            window.path_to_searchindex_js = "searchindex-30b0024d.js";
         </script>
         <!-- Start loading toc.js asap -->
         <script src="toc-e53f47a8.js"></script>
@@ -440,6 +440,32 @@ This is neither the usual pipeline order, where the clock is first, nor the comb
 <p>For the analog simulation, the five BUFF gates on the <code>clk2</code> path provide the physical clock delay needed to realize this arrival order.
 The waveform shows <code>x</code>, the delayed clock, <code>y1</code>, and <code>y0</code> in their intended sequence.</p>
 <p><label class="checkbox-label"><input class="checkbox-img" type="checkbox"><img src="figures/clock-between-test.webp" alt="Analog simulation waveform of the clock-between-data example with x, delayed clock clk2, feedback y1, and output y0"><span class="img-wrapper"><img src="figures/clock-between-test.webp" alt="Analog simulation waveform of the clock-between-data example with x, delayed clock clk2, feedback y1, and output y0"></span></label></p>
+<h2 id="ndro-setreset-ordering"><a class="header" href="#ndro-setreset-ordering">NDRO Set/Reset Ordering</a></h2>
+<p>NDRO’s first input is set, its second input is reset, and <code>clk</code> reads the stored value without clearing it.
+The stored value starts at zero, and set and reset update it even in cycles without a clock pulse.</p>
+<p>Specify distinct arrival orders to use both set and reset in one cycle:</p>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>// Set, then reset, then read: the output is 0 when all three pulses arrive.
+let q = ckt.ndro(set % 0, reset % 1, clk % 2);
+<span class="boring">}</span></code></pre>
+<p>Reversing set and reset makes that read return 1.
+The clock can also arrive between the two updates:</p>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>// Read after set but before reset: the output is 1 in this cycle.
+// A read-only cycle afterward returns 0 because reset has since arrived.
+let q = ckt.ndro(set % 0, reset % 2, clk % 1);
+<span class="boring">}</span></code></pre>
+<p>These examples assume one pulse on each of the three inputs in the described cycle.
+When a pulse is absent, only the remaining events are performed.
+Repeated clock pulses in successive cycles preserve the stored value.</p>
+<p>The logical backend preserves this behavior by delaying inputs later than <code>clk</code> by one cycle and passing their resulting order to the NDRO model.
+Explicit <code>add_delay</code> values add further wire delays as usual.</p>
+<p>Equal set/reset order numbers leave their relative order unspecified.
+If both inputs are asserted in that case, the logical stored value becomes <code>X</code> and remains unknown until a set-only or reset-only update.
+This replaces the old model’s accidental state retention for ambiguous updates.
+A cycle without a clock pulse still outputs zero. As with the existing logical gate models, data tied with <code>clk</code> is processed without an extra cycle delay; use distinct orders when the data/clock relationship matters.</p>
 <h2 id="example-4-unsatisfiable-timing-constraints"><a class="header" href="#example-4-unsatisfiable-timing-constraints">Example 4: Unsatisfiable Timing Constraints</a></h2>
 <p>RustSFQ rejects a circuit when its requested <strong>arrival orders within a cycle</strong> cannot be satisfied.
 The following example resembles the previous feedback circuit, but it requires the feedback signal <code>y1</code> to arrive before <code>clk2</code>:</p>
